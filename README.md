@@ -3,7 +3,11 @@
 [![npm version](https://badge.fury.io/js/rescuedogs-mcp-server.svg)](https://www.npmjs.com/package/rescuedogs-mcp-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-![Demo](demo.gif)
+### Search by lifestyle
+![Search demo](demo-1.png)
+
+### Get detailed profiles
+![Detail demo](demo-2.png)
 
 MCP server for discovering rescue dogs from European and UK organizations. Search, filter, and get detailed profiles of dogs available for adoption.
 
