@@ -1,5 +1,10 @@
 # rescuedogs-mcp-server
 
+[![npm version](https://badge.fury.io/js/rescuedogs-mcp-server.svg)](https://www.npmjs.com/package/rescuedogs-mcp-server)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+![Demo](demo.gif)
+
 MCP server for discovering rescue dogs from European and UK organizations. Search, filter, and get detailed profiles of dogs available for adoption.
 
 ## Installation
@@ -180,6 +185,10 @@ All data comes from [rescuedogs.me](https://www.rescuedogs.me), aggregating list
 - 12+ rescue organizations
 - 370+ breeds
 - 96% AI personality profile coverage
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and PRs welcome!
 
 ## License
 
