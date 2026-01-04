@@ -186,6 +186,8 @@ All data comes from [rescuedogs.me](https://www.rescuedogs.me), aggregating list
 - 370+ breeds
 - 96% AI personality profile coverage
 
+The platform is powered by the open-source [rescue-dog-aggregator](https://github.com/ssatama/rescue-dog-aggregator) project, which handles web scraping, data standardization, AI-powered personality extraction, and the public API.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and PRs welcome!
