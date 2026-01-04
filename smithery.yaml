@@ -1,0 +1,14 @@
+name: rescuedogs-mcp-server
+description: Discover rescue dogs from European/UK organizations through natural conversation. Search by breed, size, energy level, or lifestyle match.
+version: 1.0.1
+author: Sampo Satama
+repository: https://github.com/ssatama/rescuedogs-mcp-server
+license: MIT
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+  commandFunction: |-
+    (config) => ({ command: 'npx', args: ['-y', 'rescuedogs-mcp-server'] })
