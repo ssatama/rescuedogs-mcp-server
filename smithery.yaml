@@ -1,11 +1,13 @@
 # Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
 
+runtime: "container"
+build:
+  dockerfile: "Dockerfile"
+  dockerBuildPath: "."
 startCommand:
   type: stdio
   configSchema:
     type: object
-    required: []
     properties: {}
-  commandFunction:
-    |-
-    (config) => ({ command: 'npx', args: ['-y', 'rescuedogs-mcp-server'] })
+  commandFunction: |-
+    (config) => ({ command: 'node', args: ['/usr/local/lib/node_modules/rescuedogs-mcp-server/dist/index.js'] })
