@@ -26,5 +26,4 @@ coverage/
 .env.local
 .env.*.local
 
-# Package lock (using npm)
-package-lock.json
+# Package lock - committed for CI reproducibility
