@@ -42,6 +42,13 @@ const AGE_CATEGORY_MAP: Record<string, string> = {
   senior: "Senior",
 };
 
+// Country code normalization: backend stores "UK", ISO standard is "GB"
+function normalizeCountryForApi(code: string | undefined): string | undefined {
+  if (!code) return undefined;
+  const upper = code.toUpperCase();
+  return upper === "GB" ? "UK" : upper;
+}
+
 // Tool 1: Search Dogs
 server.tool(
   "rescuedogs_search_dogs",
@@ -90,7 +97,7 @@ server.tool(
       energy_level: parsed.energy_level,
       home_type: parsed.home_type,
       experience_level: parsed.experience_level,
-      available_to_country: parsed.adoptable_to_country,
+      available_to_country: normalizeCountryForApi(parsed.adoptable_to_country),
       organization_id: organizationId,
       limit: parsed.limit,
       offset: parsed.offset,
@@ -361,7 +368,7 @@ server.tool(
         standardized_size: parsed.current_filters?.size,
         age_category: parsed.current_filters?.age_category,
         sex: parsed.current_filters?.sex,
-        available_to_country: parsed.current_filters?.adoptable_to_country,
+        available_to_country: normalizeCountryForApi(parsed.current_filters?.adoptable_to_country),
       });
       cacheService.setFilterCounts(filterHash, counts);
     }
@@ -419,7 +426,7 @@ server.tool(
 
     if (!orgs) {
       orgs = await apiClient.getOrganizations({
-        country: parsed.country,
+        country: normalizeCountryForApi(parsed.country),
         active_only: parsed.active_only,
         limit: parsed.limit,
       });
@@ -493,7 +500,7 @@ server.tool(
       home_type: homeTypeMap[parsed.living_situation],
       energy_level: energyLevelMap[parsed.activity_level],
       experience_level: experienceMap[parsed.experience],
-      available_to_country: parsed.adoptable_to_country,
+      available_to_country: normalizeCountryForApi(parsed.adoptable_to_country),
       good_with_kids: parsed.has_children,
       good_with_dogs: parsed.has_other_dogs,
       good_with_cats: parsed.has_cats,
