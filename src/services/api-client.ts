@@ -1,9 +1,13 @@
+import { createRequire } from "node:module";
 import axios, {
   AxiosInstance,
   AxiosError,
   AxiosRequestConfig,
 } from "axios";
 import { API_BASE_URL } from "../constants.js";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../../package.json") as { version: string };
 import type {
   Dog,
   EnhancedDogData,
@@ -26,7 +30,7 @@ class ApiClient {
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "User-Agent": "rescuedogs-mcp-server/1.0.0",
+        "User-Agent": `rescuedogs-mcp-server/${version}`,
       },
     });
   }
@@ -110,6 +114,9 @@ class ApiClient {
     experience_level?: string;
     available_to_country?: string;
     organization_id?: number;
+    good_with_kids?: boolean;
+    good_with_dogs?: boolean;
+    good_with_cats?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<Dog[]> {
@@ -133,6 +140,12 @@ class ApiClient {
       queryParams.set("available_to_country", params.available_to_country);
     if (params.organization_id)
       queryParams.set("organization_id", params.organization_id.toString());
+    if (params.good_with_kids !== undefined)
+      queryParams.set("good_with_kids", params.good_with_kids.toString());
+    if (params.good_with_dogs !== undefined)
+      queryParams.set("good_with_dogs", params.good_with_dogs.toString());
+    if (params.good_with_cats !== undefined)
+      queryParams.set("good_with_cats", params.good_with_cats.toString());
     if (params.limit) queryParams.set("limit", params.limit.toString());
     if (params.offset) queryParams.set("offset", params.offset.toString());
 
@@ -168,20 +181,6 @@ class ApiClient {
     return this.request<BreedStats>({
       method: "GET",
       url: "/api/animals/breeds/stats",
-    });
-  }
-
-  async getBreeds(breedGroup?: string): Promise<string[]> {
-    const queryParams = new URLSearchParams();
-    if (breedGroup) queryParams.set("breed_group", breedGroup);
-
-    const url = breedGroup
-      ? `/api/animals/meta/breeds?${queryParams.toString()}`
-      : "/api/animals/meta/breeds";
-
-    return this.request<string[]>({
-      method: "GET",
-      url,
     });
   }
 
@@ -243,12 +242,6 @@ class ApiClient {
     });
   }
 
-  async getEnhancedOrganizations(): Promise<Organization[]> {
-    return this.request<Organization[]>({
-      method: "GET",
-      url: "/api/organizations/enhanced",
-    });
-  }
 }
 
 export const apiClient = new ApiClient();

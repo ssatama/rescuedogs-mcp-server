@@ -26,4 +26,8 @@ coverage/
 .env.local
 .env.*.local
 
+# Internal docs (roadmaps, notes)
+docs/
+
 # Package lock - committed for CI reproducibility
+.mcp.json
