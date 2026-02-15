@@ -49,6 +49,12 @@ function normalizeCountryForApi(code: string | undefined): string | undefined {
   return upper === "GB" ? "UK" : upper;
 }
 
+// Sex mapping: MCP schema uses lowercase, backend expects capitalized
+const SEX_MAP: Record<string, string> = {
+  male: "Male",
+  female: "Female",
+};
+
 // Tool 1: Search Dogs
 server.tool(
   "rescuedogs_search_dogs",
@@ -93,7 +99,7 @@ server.tool(
       breed_group: parsed.breed_group,
       standardized_size: parsed.size,
       age_category: mappedAgeCategory,
-      sex: parsed.sex,
+      sex: parsed.sex ? SEX_MAP[parsed.sex] : undefined,
       energy_level: parsed.energy_level,
       home_type: parsed.home_type,
       experience_level: parsed.experience_level,
@@ -366,8 +372,8 @@ server.tool(
       counts = await apiClient.getFilterCounts({
         breed: parsed.current_filters?.breed,
         standardized_size: parsed.current_filters?.size,
-        age_category: parsed.current_filters?.age_category,
-        sex: parsed.current_filters?.sex,
+        age_category: parsed.current_filters?.age_category ? AGE_CATEGORY_MAP[parsed.current_filters.age_category] : undefined,
+        sex: parsed.current_filters?.sex ? SEX_MAP[parsed.current_filters.sex] : undefined,
         available_to_country: normalizeCountryForApi(parsed.current_filters?.adoptable_to_country),
       });
       cacheService.setFilterCounts(filterHash, counts);
