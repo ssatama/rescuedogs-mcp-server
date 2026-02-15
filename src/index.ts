@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
+import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
 import { apiClient } from "./services/api-client.js";
 import { cacheService } from "./services/cache-service.js";
 import {
@@ -27,7 +31,7 @@ import type { EnhancedDogData, ImagePreset, Organization } from "./types.js";
 
 const server = new McpServer({
   name: "rescuedogs-mcp-server",
-  version: "1.0.0",
+  version,
 });
 
 // Age category mapping: MCP uses lowercase, backend expects capitalized
@@ -38,12 +42,26 @@ const AGE_CATEGORY_MAP: Record<string, string> = {
   senior: "Senior",
 };
 
+// Country code normalization: backend stores "UK", ISO standard is "GB"
+function normalizeCountryForApi(code: string | undefined): string | undefined {
+  if (!code) return undefined;
+  const upper = code.toUpperCase();
+  return upper === "GB" ? "UK" : upper;
+}
+
+// Sex mapping: MCP schema uses lowercase, backend expects capitalized
+const SEX_MAP: Record<string, string> = {
+  male: "Male",
+  female: "Female",
+};
+
 // Tool 1: Search Dogs
 server.tool(
   "rescuedogs_search_dogs",
   "Search for rescue dogs available for adoption from European and UK organizations. Returns matching dogs with basic info. Use rescuedogs_get_dog_details for full profiles.",
   SearchDogsInputSchema.shape,
   async (input) => {
+    try {
     const parsed = SearchDogsInputSchema.parse(input);
 
     // Map age_category to capitalized form for backend
@@ -81,11 +99,11 @@ server.tool(
       breed_group: parsed.breed_group,
       standardized_size: parsed.size,
       age_category: mappedAgeCategory,
-      sex: parsed.sex,
+      sex: parsed.sex ? SEX_MAP[parsed.sex] : undefined,
       energy_level: parsed.energy_level,
       home_type: parsed.home_type,
       experience_level: parsed.experience_level,
-      available_to_country: parsed.adoptable_to_country,
+      available_to_country: normalizeCountryForApi(parsed.adoptable_to_country),
       organization_id: organizationId,
       limit: parsed.limit,
       offset: parsed.offset,
@@ -158,6 +176,12 @@ server.tool(
     }
 
     return { content };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Error: ${error instanceof Error ? error.message : "An unexpected error occurred"}` }],
+      };
+    }
   }
 );
 
@@ -167,6 +191,7 @@ server.tool(
   "Get full details for a specific rescue dog including AI-generated personality profile, requirements, and adoption info.",
   GetDogDetailsInputSchema.shape,
   async (input) => {
+    try {
     const parsed = GetDogDetailsInputSchema.parse(input);
 
     const dog = await apiClient.getDogBySlug(parsed.slug);
@@ -211,6 +236,12 @@ server.tool(
     });
 
     return { content };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Error: ${error instanceof Error ? error.message : "An unexpected error occurred"}` }],
+      };
+    }
   }
 );
 
@@ -220,6 +251,7 @@ server.tool(
   "Get available breeds with counts and statistics. Shows which breeds have dogs available for adoption.",
   ListBreedsInputSchema.shape,
   async (input) => {
+    try {
     const parsed = ListBreedsInputSchema.parse(input);
 
     // Check cache first
@@ -269,6 +301,12 @@ server.tool(
         },
       ],
     };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Error: ${error instanceof Error ? error.message : "An unexpected error occurred"}` }],
+      };
+    }
   }
 );
 
@@ -278,6 +316,7 @@ server.tool(
   "Get overall statistics about available rescue dogs on the platform.",
   GetStatisticsInputSchema.shape,
   async (input) => {
+    try {
     const parsed = GetStatisticsInputSchema.parse(input);
 
     // Check cache first
@@ -307,6 +346,12 @@ server.tool(
         },
       ],
     };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Error: ${error instanceof Error ? error.message : "An unexpected error occurred"}` }],
+      };
+    }
   }
 );
 
@@ -316,6 +361,7 @@ server.tool(
   "Get available filter options with counts based on current filter context. Use this to show users valid filter choices that won't result in empty searches.",
   GetFilterCountsInputSchema.shape,
   async (input) => {
+    try {
     const parsed = GetFilterCountsInputSchema.parse(input);
 
     // Build cache key from filters
@@ -326,9 +372,9 @@ server.tool(
       counts = await apiClient.getFilterCounts({
         breed: parsed.current_filters?.breed,
         standardized_size: parsed.current_filters?.size,
-        age_category: parsed.current_filters?.age_category,
-        sex: parsed.current_filters?.sex,
-        available_to_country: parsed.current_filters?.adoptable_to_country,
+        age_category: parsed.current_filters?.age_category ? AGE_CATEGORY_MAP[parsed.current_filters.age_category] : undefined,
+        sex: parsed.current_filters?.sex ? SEX_MAP[parsed.current_filters.sex] : undefined,
+        available_to_country: normalizeCountryForApi(parsed.current_filters?.adoptable_to_country),
       });
       cacheService.setFilterCounts(filterHash, counts);
     }
@@ -359,6 +405,12 @@ server.tool(
         },
       ],
     };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Error: ${error instanceof Error ? error.message : "An unexpected error occurred"}` }],
+      };
+    }
   }
 );
 
@@ -368,6 +420,7 @@ server.tool(
   "List rescue organizations with their statistics and available dogs count.",
   ListOrganizationsInputSchema.shape,
   async (input) => {
+    try {
     const parsed = ListOrganizationsInputSchema.parse(input);
 
     // Check cache first (only for unfiltered requests)
@@ -379,7 +432,7 @@ server.tool(
 
     if (!orgs) {
       orgs = await apiClient.getOrganizations({
-        country: parsed.country,
+        country: normalizeCountryForApi(parsed.country),
         active_only: parsed.active_only,
         limit: parsed.limit,
       });
@@ -408,6 +461,12 @@ server.tool(
         },
       ],
     };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Error: ${error instanceof Error ? error.message : "An unexpected error occurred"}` }],
+      };
+    }
   }
 );
 
@@ -417,6 +476,7 @@ server.tool(
   "Find dogs that match your lifestyle preferences. Translates your living situation, activity level, and experience into appropriate filters.",
   MatchPreferencesInputSchema.shape,
   async (input) => {
+    try {
     const parsed = MatchPreferencesInputSchema.parse(input);
 
     // Map living situation to home_type
@@ -446,7 +506,10 @@ server.tool(
       home_type: homeTypeMap[parsed.living_situation],
       energy_level: energyLevelMap[parsed.activity_level],
       experience_level: experienceMap[parsed.experience],
-      available_to_country: parsed.adoptable_to_country,
+      available_to_country: normalizeCountryForApi(parsed.adoptable_to_country),
+      good_with_kids: parsed.has_children,
+      good_with_dogs: parsed.has_other_dogs,
+      good_with_cats: parsed.has_cats,
       limit: parsed.limit,
     });
 
@@ -475,6 +538,9 @@ server.tool(
                   home_type: homeTypeMap[parsed.living_situation],
                   energy_level: energyLevelMap[parsed.activity_level],
                   experience_level: experienceMap[parsed.experience],
+                  ...(parsed.has_children !== undefined && { good_with_kids: parsed.has_children }),
+                  ...(parsed.has_other_dogs !== undefined && { good_with_dogs: parsed.has_other_dogs }),
+                  ...(parsed.has_cats !== undefined && { good_with_cats: parsed.has_cats }),
                 },
                 dogs: dogs.map((d) => ({
                   ...d,
@@ -492,6 +558,12 @@ server.tool(
     const content: Array<{ type: "text"; text: string } | { type: "image"; data: string; mimeType: "image/jpeg" }> = [];
 
     // Add header with matched criteria
+    const compatibilityLines = [
+      parsed.has_children !== undefined ? `- Has Children: ${parsed.has_children ? "Yes" : "No"}` : "",
+      parsed.has_other_dogs !== undefined ? `- Has Other Dogs: ${parsed.has_other_dogs ? "Yes" : "No"}` : "",
+      parsed.has_cats !== undefined ? `- Has Cats: ${parsed.has_cats ? "Yes" : "No"}` : "",
+    ].filter(Boolean).join("\n");
+
     const header = `# Dogs Matching Your Preferences
 
 **Your Profile:**
@@ -499,6 +571,7 @@ server.tool(
 - Activity Level: ${parsed.activity_level}
 - Experience: ${parsed.experience.replace(/_/g, " ")}
 ${parsed.adoptable_to_country ? `- Adopting to: ${parsed.adoptable_to_country}` : ""}
+${compatibilityLines}
 
 `;
 
@@ -530,6 +603,12 @@ ${parsed.adoptable_to_country ? `- Adopting to: ${parsed.adoptable_to_country}` 
     }
 
     return { content };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Error: ${error instanceof Error ? error.message : "An unexpected error occurred"}` }],
+      };
+    }
   }
 );
 
@@ -539,6 +618,7 @@ server.tool(
   "Get information about the rescue dog adoption process including transport, fees, requirements, and timeline.",
   GetAdoptionGuideInputSchema.shape,
   async (input) => {
+    try {
     const parsed = GetAdoptionGuideInputSchema.parse(input);
 
     const guides: Record<string, string> = {
@@ -725,6 +805,12 @@ Some dogs may require:
         },
       ],
     };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [{ type: "text" as const, text: `Error: ${error instanceof Error ? error.message : "An unexpected error occurred"}` }],
+      };
+    }
   }
 );
 

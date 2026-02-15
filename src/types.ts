@@ -60,6 +60,10 @@ export interface EnhancedDogData {
   home_type: string | null;
   experience_level: string | null;
   quality_score: number | null;
+  good_with_kids: boolean | null;
+  good_with_dogs: boolean | null;
+  good_with_cats: boolean | null;
+  good_with_strangers: boolean | null;
 }
 
 export interface Organization {

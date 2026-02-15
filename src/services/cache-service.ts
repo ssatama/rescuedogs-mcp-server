@@ -2,7 +2,6 @@ import NodeCache from "node-cache";
 import { CACHE_TTL } from "../constants.js";
 
 type CacheKey =
-  | "breeds"
   | "breed_stats"
   | "statistics"
   | "organizations"
@@ -51,14 +50,6 @@ class CacheService {
   }
 
   // Convenience methods with built-in TTL
-  getBreeds(): string[] | undefined {
-    return this.get<string[]>("breeds");
-  }
-
-  setBreeds(breeds: string[]): void {
-    this.set("breeds", breeds, CACHE_TTL.BREEDS);
-  }
-
   getBreedStats<T>(): T | undefined {
     return this.get<T>("breed_stats");
   }

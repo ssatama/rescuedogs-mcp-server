@@ -6,7 +6,7 @@ Thanks for your interest in contributing to rescuedogs-mcp-server!
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/rescuedogs-mcp-server.git
+   git clone https://github.com/ssatama/rescuedogs-mcp-server.git
    cd rescuedogs-mcp-server
    ```
 
