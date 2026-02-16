@@ -11,6 +11,7 @@ export interface ImageContent {
   mimeType: "image/jpeg";
 }
 
+/** @internal Exported for unit testing only. */
 export function buildTransformUrl(
   originalUrl: string,
   preset: ImagePreset

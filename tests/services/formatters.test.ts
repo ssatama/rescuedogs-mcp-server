@@ -4,6 +4,7 @@ import {
   formatDogMarkdown,
   formatDogsListMarkdown,
   formatBreedStatsMarkdown,
+  formatOrganizationMarkdown,
   formatOrganizationsListMarkdown,
   formatStatisticsMarkdown,
   formatFilterCountsMarkdown,
@@ -177,6 +178,36 @@ describe("formatBreedStatsMarkdown", () => {
     const result = formatBreedStatsMarkdown(mockBreedStats);
     expect(result).toContain("Golden Retriever");
     expect(result).toContain("German Shepherd");
+  });
+});
+
+describe("formatOrganizationMarkdown", () => {
+  it("includes organization name as heading", () => {
+    const result = formatOrganizationMarkdown(mockOrganization);
+    expect(result).toContain("## Happy Paws Rescue");
+  });
+
+  it("includes location, dogs available, and website", () => {
+    const result = formatOrganizationMarkdown(mockOrganization);
+    expect(result).toContain("Barcelona, Spain");
+    expect(result).toContain("42");
+    expect(result).toContain("https://happypaws.org");
+  });
+
+  it("includes ships_to countries", () => {
+    const result = formatOrganizationMarkdown(mockOrganization);
+    expect(result).toContain("UK, DE, FR");
+  });
+
+  it("includes new this week when positive", () => {
+    const result = formatOrganizationMarkdown(mockOrganization);
+    expect(result).toContain("New This Week");
+    expect(result).toContain("3");
+  });
+
+  it("includes description when present", () => {
+    const result = formatOrganizationMarkdown(mockOrganization);
+    expect(result).toContain("A rescue organization in Spain");
   });
 });
 

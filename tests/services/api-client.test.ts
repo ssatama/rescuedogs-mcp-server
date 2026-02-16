@@ -73,6 +73,114 @@ describe("ApiClient", () => {
     });
   });
 
+  describe("getEnhancedDogData", () => {
+    it("calls correct URL with animal ID", async () => {
+      const mockData = { id: 101, bio: "A friendly dog" };
+      mockRequest.mockResolvedValue({ data: mockData });
+
+      const result = await apiClient.getEnhancedDogData(101);
+
+      expect(result).toEqual(mockData);
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toBe("/api/enhanced_animals/101/enhanced/");
+    });
+  });
+
+  describe("getBulkEnhancedData", () => {
+    it("sends POST with animal IDs array", async () => {
+      const mockData = [{ id: 101 }, { id: 102 }];
+      mockRequest.mockResolvedValue({ data: mockData });
+
+      const result = await apiClient.getBulkEnhancedData([101, 102]);
+
+      expect(result).toEqual(mockData);
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.method).toBe("POST");
+      expect(config.url).toBe("/api/enhanced_animals/enhanced/bulk/");
+      expect(config.data).toEqual({ animal_ids: [101, 102] });
+    });
+  });
+
+  describe("getBreedStats", () => {
+    it("calls correct URL", async () => {
+      const mockStats = { total_dogs: 1500 };
+      mockRequest.mockResolvedValue({ data: mockStats });
+
+      const result = await apiClient.getBreedStats();
+
+      expect(result).toEqual(mockStats);
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toBe("/api/animals/breeds/stats/");
+    });
+  });
+
+  describe("getStatistics", () => {
+    it("calls correct URL", async () => {
+      const mockStats = { total_dogs: 2500 };
+      mockRequest.mockResolvedValue({ data: mockStats });
+
+      const result = await apiClient.getStatistics();
+
+      expect(result).toEqual(mockStats);
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toBe("/api/animals/statistics/");
+    });
+  });
+
+  describe("getFilterCounts", () => {
+    it("calls correct URL with filters", async () => {
+      const mockCounts = { size_options: [] };
+      mockRequest.mockResolvedValue({ data: mockCounts });
+
+      const result = await apiClient.getFilterCounts({
+        breed: "Golden Retriever",
+        sex: "Male",
+      });
+
+      expect(result).toEqual(mockCounts);
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toContain("/api/animals/meta/filter_counts/");
+      expect(config.url).toContain("status=available");
+      expect(config.url).toContain("breed=Golden+Retriever");
+      expect(config.url).toContain("sex=Male");
+    });
+
+    it("always includes status=available filter", async () => {
+      mockRequest.mockResolvedValue({ data: {} });
+
+      await apiClient.getFilterCounts();
+
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toContain("status=available");
+    });
+  });
+
+  describe("getOrganizations", () => {
+    it("constructs correct URL with filters", async () => {
+      mockRequest.mockResolvedValue({ data: [] });
+
+      await apiClient.getOrganizations({
+        country: "UK",
+        active_only: true,
+        limit: 10,
+      });
+
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toContain("country=UK");
+      expect(config.url).toContain("active_only=true");
+      expect(config.url).toContain("limit=10");
+    });
+
+    it("calls bare URL when no params provided", async () => {
+      mockRequest.mockResolvedValue({ data: [] });
+
+      await apiClient.getOrganizations();
+
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toBe("/api/organizations/");
+    });
+  });
+
   describe("error handling", () => {
     it("throws 'Not found' for 404 response", async () => {
       const error = createAxiosError(404, { detail: "Dog not found" });
