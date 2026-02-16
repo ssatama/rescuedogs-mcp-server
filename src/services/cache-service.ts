@@ -8,7 +8,7 @@ type CacheKey =
   | `filter_counts:${string}`
   | `image:${string}`;
 
-class CacheService {
+export class CacheService {
   private cache: NodeCache;
 
   constructor() {

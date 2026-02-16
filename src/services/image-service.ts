@@ -11,7 +11,7 @@ export interface ImageContent {
   mimeType: "image/jpeg";
 }
 
-function buildTransformUrl(
+export function buildTransformUrl(
   originalUrl: string,
   preset: ImagePreset
 ): string | null {
