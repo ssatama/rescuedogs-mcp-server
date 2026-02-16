@@ -18,13 +18,26 @@ export function registerGetFilterCountsTool(server: McpServer): void {
       try {
         const parsed = GetFilterCountsInputSchema.parse(input);
 
-        // Build deterministic cache key from filters (sorted keys)
-        const filters = parsed.current_filters || {};
+        // Build deterministic cache key from normalized filters (sorted keys)
+        const raw = parsed.current_filters || {};
+        const normalized: Record<string, unknown> = {
+          ...(raw.breed && { breed: raw.breed }),
+          ...(raw.size && { size: raw.size }),
+          ...(raw.age_category && {
+            age_category: AGE_CATEGORY_MAP[raw.age_category],
+          }),
+          ...(raw.sex && { sex: SEX_MAP[raw.sex] }),
+          ...(raw.adoptable_to_country && {
+            adoptable_to_country: normalizeCountryForApi(
+              raw.adoptable_to_country
+            ),
+          }),
+        };
         const filterHash = JSON.stringify(
-          Object.keys(filters)
+          Object.keys(normalized)
             .sort()
             .reduce<Record<string, unknown>>((acc, key) => {
-              acc[key] = filters[key as keyof typeof filters];
+              acc[key] = normalized[key];
               return acc;
             }, {})
         );
