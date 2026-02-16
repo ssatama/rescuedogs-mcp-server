@@ -151,28 +151,28 @@ class ApiClient {
 
     return this.request<Dog[]>({
       method: "GET",
-      url: `/api/animals?${queryParams.toString()}`,
+      url: `/api/animals/?${queryParams.toString()}`,
     });
   }
 
   async getDogBySlug(slug: string): Promise<Dog> {
     return this.request<Dog>({
       method: "GET",
-      url: `/api/animals/${encodeURIComponent(slug)}`,
+      url: `/api/animals/${encodeURIComponent(slug)}/`,
     });
   }
 
   async getEnhancedDogData(animalId: number): Promise<EnhancedDogData> {
     return this.request<EnhancedDogData>({
       method: "GET",
-      url: `/api/enhanced_animals/${animalId}/enhanced`,
+      url: `/api/enhanced_animals/${animalId}/enhanced/`,
     });
   }
 
   async getBulkEnhancedData(animalIds: number[]): Promise<EnhancedDogData[]> {
     return this.request<EnhancedDogData[]>({
       method: "POST",
-      url: "/api/enhanced_animals/enhanced/bulk",
+      url: "/api/enhanced_animals/enhanced/bulk/",
       data: { animal_ids: animalIds },
     });
   }
@@ -180,14 +180,14 @@ class ApiClient {
   async getBreedStats(): Promise<BreedStats> {
     return this.request<BreedStats>({
       method: "GET",
-      url: "/api/animals/breeds/stats",
+      url: "/api/animals/breeds/stats/",
     });
   }
 
   async getStatistics(): Promise<Statistics> {
     return this.request<Statistics>({
       method: "GET",
-      url: "/api/animals/statistics",
+      url: "/api/animals/statistics/",
     });
   }
 
@@ -213,7 +213,7 @@ class ApiClient {
 
     return this.request<FilterCountsResponse>({
       method: "GET",
-      url: `/api/animals/meta/filter_counts?${queryParams.toString()}`,
+      url: `/api/animals/meta/filter_counts/?${queryParams.toString()}`,
     });
   }
 
@@ -233,8 +233,8 @@ class ApiClient {
 
     const url =
       queryParams.toString().length > 0
-        ? `/api/organizations?${queryParams.toString()}`
-        : "/api/organizations";
+        ? `/api/organizations/?${queryParams.toString()}`
+        : "/api/organizations/";
 
     return this.request<Organization[]>({
       method: "GET",

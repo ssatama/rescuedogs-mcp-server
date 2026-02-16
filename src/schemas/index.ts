@@ -56,6 +56,18 @@ export const SearchDogsInputSchema = z
       .int()
       .optional()
       .describe("Filter by specific rescue organization ID"),
+    good_with_kids: z
+      .boolean()
+      .optional()
+      .describe("Set to true to filter for dogs good with children"),
+    good_with_dogs: z
+      .boolean()
+      .optional()
+      .describe("Set to true to filter for dogs good with other dogs"),
+    good_with_cats: z
+      .boolean()
+      .optional()
+      .describe("Set to true to filter for dogs good with cats"),
     limit: z
       .number()
       .int()
@@ -200,15 +212,15 @@ export const MatchPreferencesInputSchema = z
     has_children: z
       .boolean()
       .optional()
-      .describe("Whether you have children at home"),
+      .describe("Set to true to filter for dogs good with children, false to exclude them, or omit to not filter by this"),
     has_other_dogs: z
       .boolean()
       .optional()
-      .describe("Whether you have other dogs at home"),
+      .describe("Set to true to filter for dogs good with other dogs, false to exclude them, or omit to not filter by this"),
     has_cats: z
       .boolean()
       .optional()
-      .describe("Whether you have cats at home"),
+      .describe("Set to true to filter for dogs good with cats, false to exclude them, or omit to not filter by this"),
     adoptable_to_country: z
       .string()
       .optional()
