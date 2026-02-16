@@ -19,6 +19,7 @@ import type {
 } from "../types.js";
 
 const REQUEST_TIMEOUT = 10000; // 10 seconds
+const RETRY_DELAY_MS = 1000;
 
 class ApiClient {
   private client: AxiosInstance;
@@ -35,11 +36,31 @@ class ApiClient {
     });
   }
 
+  private isRetryableError(error: unknown): boolean {
+    if (!axios.isAxiosError(error)) return false;
+    const axiosError = error as AxiosError;
+    if (axiosError.response) {
+      const status = axiosError.response.status;
+      return status === 429 || status >= 500;
+    }
+    const code = axiosError.code;
+    return code === "ECONNABORTED" || code === "ENOTFOUND" || code === "ECONNREFUSED";
+  }
+
   private async request<T>(config: AxiosRequestConfig): Promise<T> {
     try {
       const response = await this.client.request<T>(config);
       return response.data;
     } catch (error) {
+      if (this.isRetryableError(error)) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+        try {
+          const response = await this.client.request<T>(config);
+          return response.data;
+        } catch (retryError) {
+          throw this.handleError(retryError);
+        }
+      }
       throw this.handleError(error);
     }
   }

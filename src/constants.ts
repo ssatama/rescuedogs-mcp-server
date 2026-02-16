@@ -27,3 +27,12 @@ export const PAGINATION_DEFAULTS = {
   limit: DEFAULT_LIMIT,
   offset: 0,
 } as const;
+
+export const DISPLAY_LIMITS = {
+  MAX_IMAGES: 5,
+  MAX_BREED_TRAITS: 3,
+  MAX_STATS_COUNTRIES: 8,
+  MAX_STATS_ORGANIZATIONS: 5,
+  MAX_FILTER_COUNTRIES: 15,
+  MAX_FILTER_BREEDS: 10,
+} as const;

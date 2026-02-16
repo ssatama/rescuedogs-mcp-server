@@ -4,7 +4,13 @@ import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
 import { MatchPreferencesInputSchema } from "../schemas/index.js";
 import type { EnhancedDogData } from "../types.js";
-import { normalizeCountryForApi } from "../utils/mappings.js";
+import {
+  normalizeCountryForApi,
+  HOME_TYPE_MAP,
+  ENERGY_LEVEL_MAP,
+  EXPERIENCE_MAP,
+} from "../utils/mappings.js";
+import { DISPLAY_LIMITS } from "../constants.js";
 
 export function registerMatchPreferencesTool(server: McpServer): void {
   server.tool(
@@ -15,33 +21,10 @@ export function registerMatchPreferencesTool(server: McpServer): void {
       try {
         const parsed = MatchPreferencesInputSchema.parse(input);
 
-        // Map living situation to home_type
-        const homeTypeMap: Record<string, string> = {
-          apartment: "apartment_ok",
-          house_small_garden: "house_preferred",
-          house_large_garden: "house_preferred",
-          rural: "house_required",
-        };
-
-        // Map activity level to energy_level
-        const energyLevelMap: Record<string, string> = {
-          sedentary: "low",
-          moderate: "medium",
-          active: "high",
-          very_active: "very_high",
-        };
-
-        // Map experience to experience_level
-        const experienceMap: Record<string, string> = {
-          first_time: "first_time_ok",
-          some: "some_experience",
-          experienced: "experienced_only",
-        };
-
         const dogs = await apiClient.searchDogs({
-          home_type: homeTypeMap[parsed.living_situation],
-          energy_level: energyLevelMap[parsed.activity_level],
-          experience_level: experienceMap[parsed.experience],
+          home_type: HOME_TYPE_MAP[parsed.living_situation],
+          energy_level: ENERGY_LEVEL_MAP[parsed.activity_level],
+          experience_level: EXPERIENCE_MAP[parsed.experience],
           available_to_country: normalizeCountryForApi(
             parsed.adoptable_to_country
           ),
@@ -76,9 +59,9 @@ export function registerMatchPreferencesTool(server: McpServer): void {
                   {
                     count: dogs.length,
                     matched_criteria: {
-                      home_type: homeTypeMap[parsed.living_situation],
-                      energy_level: energyLevelMap[parsed.activity_level],
-                      experience_level: experienceMap[parsed.experience],
+                      home_type: HOME_TYPE_MAP[parsed.living_situation],
+                      energy_level: ENERGY_LEVEL_MAP[parsed.activity_level],
+                      experience_level: EXPERIENCE_MAP[parsed.experience],
                       ...(parsed.has_children !== undefined && {
                         good_with_kids: parsed.has_children,
                       }),
@@ -146,7 +129,7 @@ ${compatibilityLines}
         // Add images if requested
         if (parsed.include_images && dogs.length > 0) {
           const images = await fetchDogImages(
-            dogs.slice(0, 5).map((d) => d.primary_image_url),
+            dogs.slice(0, DISPLAY_LIMITS.MAX_IMAGES).map((d) => d.primary_image_url),
             "thumbnail"
           );
 

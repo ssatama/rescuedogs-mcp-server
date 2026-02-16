@@ -206,6 +206,64 @@ docker run -i rescuedogs-mcp
 | `RESCUEDOGS_API_URL` | Base URL for the rescuedogs API | `https://api.rescuedogs.me` |
 | `RESCUEDOGS_IMAGE_URL` | Base URL for the image CDN | `https://images.rescuedogs.me` |
 
+## Architecture
+
+```
+src/
+├── index.ts              # Entry point — server setup and stdio transport
+├── constants.ts          # Shared constants (API URLs, cache TTLs, display limits)
+├── types.ts              # TypeScript type definitions for API responses
+├── schemas/
+│   └── index.ts          # Zod input schemas for all tools
+├── services/
+│   ├── api-client.ts     # Axios-based API client with retry logic
+│   ├── cache-service.ts  # In-memory cache with TTL support
+│   ├── formatters.ts     # Markdown formatters for API responses
+│   └── image-service.ts  # Image fetching and CDN transform URLs
+├── tools/
+│   ├── index.ts          # Tool registration barrel with logging wrapper
+│   ├── search-dogs.ts    # rescuedogs_search_dogs handler
+│   ├── get-dog-details.ts
+│   ├── list-breeds.ts
+│   ├── get-statistics.ts
+│   ├── get-filter-counts.ts
+│   ├── list-organizations.ts
+│   ├── match-preferences.ts
+│   └── get-adoption-guide.ts
+├── utils/
+│   └── mappings.ts       # Value mappings (age, sex, country, preferences)
+└── data/
+    └── adoption-guides.ts # Static adoption guide content
+```
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Type check
+npm run typecheck
+
+# Lint
+npm run lint
+
+# Lint with auto-fix
+npm run lint:fix
+
+# Build
+npm run build
+
+# Development mode (tsx)
+npm run dev
+```
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and PRs welcome!
