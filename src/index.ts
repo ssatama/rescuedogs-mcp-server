@@ -105,6 +105,9 @@ server.tool(
       experience_level: parsed.experience_level,
       available_to_country: normalizeCountryForApi(parsed.adoptable_to_country),
       organization_id: organizationId,
+      good_with_kids: parsed.good_with_kids,
+      good_with_dogs: parsed.good_with_dogs,
+      good_with_cats: parsed.good_with_cats,
       limit: parsed.limit,
       offset: parsed.offset,
     });
