@@ -199,6 +199,13 @@ docker build -t rescuedogs-mcp .
 docker run -i rescuedogs-mcp
 ```
 
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `RESCUEDOGS_API_URL` | Base URL for the rescuedogs API | `https://api.rescuedogs.me` |
+| `RESCUEDOGS_IMAGE_URL` | Base URL for the image CDN | `https://images.rescuedogs.me` |
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and PRs welcome!
