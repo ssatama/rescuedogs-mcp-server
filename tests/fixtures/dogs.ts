@@ -217,6 +217,71 @@ export const mockStatistics: Statistics = {
   ],
 };
 
+export const mockDog2: Dog = {
+  id: 202,
+  slug: "luna-labrador-mix",
+  name: "Luna",
+  animal_type: "dog",
+  breed: "Labrador Mix",
+  standardized_breed: "Labrador Mix",
+  breed_group: "Retrievers",
+  primary_breed: "Labrador Retriever",
+  secondary_breed: "Unknown",
+  breed_type: "crossbreed",
+  breed_slug: "labrador-mix",
+  age_text: "1 year",
+  age_min_months: 12,
+  age_max_months: 14,
+  sex: "Female",
+  size: "Medium",
+  standardized_size: "Medium",
+  status: "available",
+  primary_image_url: "https://images.rescuedogs.me/dogs/luna.jpg",
+  adoption_url: "https://happypaws.org/adopt/luna",
+  organization_id: 1,
+  external_id: null,
+  language: "en",
+  properties: {},
+  dog_profiler_data: {
+    bio: "Luna is a sweet labrador mix.",
+    personality_traits: ["Sweet", "Gentle"],
+    energy_level: "medium",
+    home_type: "apartment_ok",
+    experience_level: "first_time_ok",
+  },
+  created_at: "2024-02-01T00:00:00Z",
+  updated_at: "2024-06-15T00:00:00Z",
+  last_scraped_at: "2024-06-15T00:00:00Z",
+  availability_confidence: "high",
+  organization: mockOrganization,
+};
+
+export const mockEnhancedData2: EnhancedDogData = {
+  id: 202,
+  enhanced_description: "A gentle soul who loves cuddles.",
+  tagline: "Sweet and gentle Luna",
+  bio: "Luna is a sweet labrador mix looking for a loving home.",
+  looking_for: "A calm home with patient owners.",
+  personality_traits: ["Sweet", "Gentle", "Calm"],
+  interests: ["Walks", "Napping", "Treats"],
+  deal_breakers: ["No loud households"],
+  fun_fact: "Does a little dance when she sees her leash!",
+  energy_level: "medium",
+  home_type: "apartment_ok",
+  experience_level: "first_time_ok",
+  quality_score: 78,
+  good_with_kids: true,
+  good_with_dogs: true,
+  good_with_cats: true,
+  good_with_strangers: false,
+};
+
+export const mockImageContent = {
+  type: "image" as const,
+  data: "iVBORw0KGgoAAAANSUhEUg==",
+  mimeType: "image/jpeg" as const,
+};
+
 export const mockFilterCounts: FilterCountsResponse = {
   size_options: [
     { value: "Small", label: "Small", count: 300 },
