@@ -10,6 +10,7 @@ import {
   SEX_MAP,
   normalizeCountryForApi,
 } from "../utils/mappings.js";
+import { DISPLAY_LIMITS } from "../constants.js";
 
 export function registerSearchDogsTool(server: McpServer): void {
   server.tool(
@@ -126,7 +127,7 @@ export function registerSearchDogsTool(server: McpServer): void {
         // Add images if requested
         if (parsed.include_images && dogs.length > 0) {
           const images = await fetchDogImages(
-            dogs.slice(0, 5).map((d) => d.primary_image_url),
+            dogs.slice(0, DISPLAY_LIMITS.MAX_IMAGES).map((d) => d.primary_image_url),
             parsed.image_preset as ImagePreset
           );
 

@@ -1,4 +1,4 @@
-import { CHARACTER_LIMIT } from "../constants.js";
+import { CHARACTER_LIMIT, DISPLAY_LIMITS } from "../constants.js";
 import type {
   Dog,
   EnhancedDogData,
@@ -285,7 +285,7 @@ function formatBreedDetails(breed: QualifyingBreed, parts: string[]): void {
     parts.push(`- **Type:** ${breed.breed_type}`);
   }
   if (breed.personality_traits.length > 0) {
-    parts.push(`- **Traits:** ${breed.personality_traits.slice(0, 3).join(", ")}`);
+    parts.push(`- **Traits:** ${breed.personality_traits.slice(0, DISPLAY_LIMITS.MAX_BREED_TRAITS).join(", ")}`);
   }
   if (breed.organization_count > 0) {
     parts.push(`- **Available from:** ${breed.organization_count} organizations`);
@@ -358,7 +358,7 @@ export function formatStatisticsMarkdown(stats: Statistics): string {
   if (stats.countries.length > 0) {
     parts.push("## Dogs by Country");
     parts.push("");
-    for (const country of stats.countries.slice(0, 8)) {
+    for (const country of stats.countries.slice(0, DISPLAY_LIMITS.MAX_STATS_COUNTRIES)) {
       parts.push(`- **${country.country}:** ${country.count} dogs`);
     }
     parts.push("");
@@ -367,7 +367,7 @@ export function formatStatisticsMarkdown(stats: Statistics): string {
   if (stats.organizations.length > 0) {
     parts.push("## Top Organizations");
     parts.push("");
-    for (const org of stats.organizations.slice(0, 5)) {
+    for (const org of stats.organizations.slice(0, DISPLAY_LIMITS.MAX_STATS_ORGANIZATIONS)) {
       parts.push(`- **${org.name}** (${org.country}): ${org.dog_count} dogs`);
     }
     parts.push("");
@@ -415,18 +415,18 @@ export function formatFilterCountsMarkdown(counts: FilterCountsResponse): string
     const sortedCountries = [...counts.available_country_options].sort(
       (a, b) => b.count - a.count
     );
-    for (const opt of sortedCountries.slice(0, 15)) {
+    for (const opt of sortedCountries.slice(0, DISPLAY_LIMITS.MAX_FILTER_COUNTRIES)) {
       parts.push(`- ${opt.label}: ${opt.count} dogs`);
     }
-    if (sortedCountries.length > 15) {
-      parts.push(`- *...and ${sortedCountries.length - 15} more countries*`);
+    if (sortedCountries.length > DISPLAY_LIMITS.MAX_FILTER_COUNTRIES) {
+      parts.push(`- *...and ${sortedCountries.length - DISPLAY_LIMITS.MAX_FILTER_COUNTRIES} more countries*`);
     }
     parts.push("");
   }
 
   if (counts.breed_options.length > 0) {
     parts.push("## Top Breeds");
-    for (const opt of counts.breed_options.slice(0, 10)) {
+    for (const opt of counts.breed_options.slice(0, DISPLAY_LIMITS.MAX_FILTER_BREEDS)) {
       parts.push(`- ${opt.label}: ${opt.count} dogs`);
     }
     parts.push("");
