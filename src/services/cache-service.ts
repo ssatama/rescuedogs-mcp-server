@@ -8,7 +8,7 @@ type CacheKey =
   | `filter_counts:${string}`
   | `image:${string}`;
 
-class CacheService {
+export class CacheService {
   private cache: NodeCache;
 
   constructor() {
@@ -25,9 +25,8 @@ class CacheService {
   }
 
   set<T>(key: CacheKey, value: T, ttlMs?: number): void {
-    const ttlSeconds = ttlMs ? ttlMs / 1000 : undefined;
-    if (ttlSeconds) {
-      this.cache.set(key, value, ttlSeconds);
+    if (ttlMs !== undefined) {
+      this.cache.set(key, value, ttlMs / 1000);
     } else {
       this.cache.set(key, value);
     }
