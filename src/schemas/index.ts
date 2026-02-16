@@ -84,7 +84,7 @@ export const SearchDogsInputSchema = z
     include_images: z
       .boolean()
       .default(false)
-      .describe("Include dog photos in response (opt-in, increases response size)"),
+      .describe("Include dog photos in response (opt-in, increases response size). Images returned for up to 5 dogs."),
     image_preset: ImagePresetEnum.default("thumbnail").describe(
       "Image size preset: 'thumbnail' (200x200) or 'medium' (400x400)"
     ),
@@ -235,7 +235,7 @@ export const MatchPreferencesInputSchema = z
     include_images: z
       .boolean()
       .default(false)
-      .describe("Include dog photos in response"),
+      .describe("Include dog photos in response. Images returned for up to 5 dogs."),
     response_format: ResponseFormatEnum.default("markdown").describe(
       "Response format: 'markdown' for human-readable or 'json' for structured data"
     ),

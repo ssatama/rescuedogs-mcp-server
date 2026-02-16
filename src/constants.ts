@@ -1,4 +1,5 @@
-export const API_BASE_URL = "https://api.rescuedogs.me";
+export const API_BASE_URL =
+  process.env.RESCUEDOGS_API_URL || "https://api.rescuedogs.me";
 
 export const CHARACTER_LIMIT = 25000;
 
@@ -15,7 +16,8 @@ export const IMAGE_TRANSFORMS = {
   medium: "w=400,h=400,fit=cover,q=75,f=jpeg",
 } as const;
 
-export const IMAGE_BASE_URL = "https://images.rescuedogs.me";
+export const IMAGE_BASE_URL =
+  process.env.RESCUEDOGS_IMAGE_URL || "https://images.rescuedogs.me";
 
 export const DEFAULT_LIMIT = 10;
 export const MAX_LIMIT = 50;

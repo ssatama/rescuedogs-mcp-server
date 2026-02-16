@@ -18,8 +18,16 @@ export function registerGetFilterCountsTool(server: McpServer): void {
       try {
         const parsed = GetFilterCountsInputSchema.parse(input);
 
-        // Build cache key from filters
-        const filterHash = JSON.stringify(parsed.current_filters || {});
+        // Build deterministic cache key from filters (sorted keys)
+        const filters = parsed.current_filters || {};
+        const filterHash = JSON.stringify(
+          Object.keys(filters)
+            .sort()
+            .reduce<Record<string, unknown>>((acc, key) => {
+              acc[key] = filters[key as keyof typeof filters];
+              return acc;
+            }, {})
+        );
         let counts =
           cacheService.getFilterCounts<
             Awaited<ReturnType<typeof apiClient.getFilterCounts>>
