@@ -26,7 +26,7 @@ describe("rescuedogs_list_breeds handler", () => {
     vi.clearAllMocks();
     const { server, getHandler: gh } = createMockServer();
     getHandler = gh;
-    registerListBreedsTool(server as any);
+    registerListBreedsTool(server);
   });
 
   it("returns cached data without calling API", async () => {

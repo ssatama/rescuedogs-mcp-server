@@ -9,7 +9,7 @@ describe("rescuedogs_get_adoption_guide handler", () => {
     vi.clearAllMocks();
     const { server, getHandler: gh } = createMockServer();
     getHandler = gh;
-    registerGetAdoptionGuideTool(server as any);
+    registerGetAdoptionGuideTool(server);
   });
 
   it("returns overview content by default", async () => {
@@ -46,6 +46,13 @@ describe("rescuedogs_get_adoption_guide handler", () => {
     const result = await handler({ topic: "timeline" });
 
     expect(result.content[0]!.text).toContain("Typical Adoption Timeline");
+  });
+
+  it("returns isError for invalid topic (Zod validation)", async () => {
+    const handler = getHandler("rescuedogs_get_adoption_guide");
+    const result = await handler({ topic: "nonexistent_topic" });
+
+    expect(result.isError).toBe(true);
   });
 
   it('normalizes country "UK" to "GB" for country-specific lookup', async () => {

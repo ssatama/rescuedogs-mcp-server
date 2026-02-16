@@ -40,7 +40,7 @@ describe("rescuedogs_search_dogs handler", () => {
     vi.clearAllMocks();
     const { server, getHandler: gh } = createMockServer();
     getHandler = gh;
-    registerSearchDogsTool(server as any);
+    registerSearchDogsTool(server);
   });
 
   it("calls searchDogs with correct params", async () => {
@@ -121,6 +121,17 @@ describe("rescuedogs_search_dogs handler", () => {
     expect(cacheService.setOrganizations).toHaveBeenCalled();
     expect(apiClient.searchDogs).toHaveBeenCalledWith(
       expect.objectContaining({ organization_id: 1 })
+    );
+  });
+
+  it('normalizes adoptable_to_country "GB" to "UK"', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ adoptable_to_country: "GB" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ available_to_country: "UK" })
     );
   });
 

@@ -26,7 +26,7 @@ describe("rescuedogs_get_filter_counts handler", () => {
     vi.clearAllMocks();
     const { server, getHandler: gh } = createMockServer();
     getHandler = gh;
-    registerGetFilterCountsTool(server as any);
+    registerGetFilterCountsTool(server);
   });
 
   it("returns cached data without calling API", async () => {

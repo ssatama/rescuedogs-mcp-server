@@ -28,7 +28,7 @@ describe("rescuedogs_get_dog_details handler", () => {
     vi.clearAllMocks();
     const { server, getHandler: gh } = createMockServer();
     getHandler = gh;
-    registerGetDogDetailsTool(server as any);
+    registerGetDogDetailsTool(server);
   });
 
   it("returns markdown with image when include_image is true", async () => {

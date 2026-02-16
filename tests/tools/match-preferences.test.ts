@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createMockServer } from "../helpers/mock-server.js";
-import { mockDog, mockEnhancedData } from "../fixtures/dogs.js";
+import { mockDog, mockEnhancedData, mockImageContent } from "../fixtures/dogs.js";
 
 vi.mock("../../src/services/api-client.js", () => ({
   apiClient: {
@@ -14,6 +14,7 @@ vi.mock("../../src/services/image-service.js", () => ({
 }));
 
 import { apiClient } from "../../src/services/api-client.js";
+import { fetchDogImages } from "../../src/services/image-service.js";
 import { registerMatchPreferencesTool } from "../../src/tools/match-preferences.js";
 
 const baseInput = {
@@ -29,7 +30,7 @@ describe("rescuedogs_match_preferences handler", () => {
     vi.clearAllMocks();
     const { server, getHandler: gh } = createMockServer();
     getHandler = gh;
-    registerMatchPreferencesTool(server as any);
+    registerMatchPreferencesTool(server);
   });
 
   it('maps living_situation "apartment" to home_type "apartment_ok"', async () => {
@@ -146,6 +147,23 @@ describe("rescuedogs_match_preferences handler", () => {
     expect(apiClient.searchDogs).toHaveBeenCalledWith(
       expect.objectContaining({ available_to_country: "UK" })
     );
+  });
+
+  it("includes images when include_images is true", async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
+    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
+      mockEnhancedData,
+    ]);
+    vi.mocked(fetchDogImages).mockResolvedValue([mockImageContent]);
+
+    const handler = getHandler("rescuedogs_match_preferences");
+    const result = await handler({ ...baseInput, include_images: true });
+
+    expect(fetchDogImages).toHaveBeenCalledWith(
+      [mockDog.primary_image_url],
+      "thumbnail"
+    );
+    expect(result.content.some((c) => c.type === "image")).toBe(true);
   });
 
   it("returns isError when required fields are missing (Zod validation)", async () => {

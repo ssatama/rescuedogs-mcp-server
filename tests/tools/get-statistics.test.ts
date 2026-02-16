@@ -27,7 +27,7 @@ describe("rescuedogs_get_statistics handler", () => {
     vi.clearAllMocks();
     const { server, getHandler: gh } = createMockServer();
     getHandler = gh;
-    registerGetStatisticsTool(server as any);
+    registerGetStatisticsTool(server);
   });
 
   it("returns cached data without calling API", async () => {

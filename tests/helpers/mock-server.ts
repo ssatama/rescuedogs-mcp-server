@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 type ToolHandler = (input: Record<string, unknown>) => Promise<{
   content: Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
@@ -26,7 +27,7 @@ export function createMockServer() {
         tools.set(name, { name, description, schema, handler });
       }
     ),
-  };
+  } as unknown as McpServer;
 
   function getHandler(toolName: string): ToolHandler {
     const tool = tools.get(toolName);

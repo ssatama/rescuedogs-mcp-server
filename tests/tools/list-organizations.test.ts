@@ -28,7 +28,7 @@ describe("rescuedogs_list_organizations handler", () => {
     vi.clearAllMocks();
     const { server, getHandler: gh } = createMockServer();
     getHandler = gh;
-    registerListOrganizationsTool(server as any);
+    registerListOrganizationsTool(server);
   });
 
   it("returns cached data when no country filter", async () => {
