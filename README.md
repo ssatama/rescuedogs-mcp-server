@@ -17,6 +17,10 @@ MCP server for discovering rescue dogs from European and UK organizations. Searc
 npm install -g rescuedogs-mcp-server
 ```
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/ssatama-rescuedogs-mcp-server).
+
 ## Claude Desktop Configuration
 
 Add to `~/.config/claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
