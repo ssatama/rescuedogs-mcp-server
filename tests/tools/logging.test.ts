@@ -16,8 +16,8 @@ describe("wrapWithLogging", () => {
     registeredHandlers = new Map();
 
     mockServer = {
-      tool: vi.fn(
-        (name: string, _desc: string, _schema: unknown, handler: ToolHandler) => {
+      registerTool: vi.fn(
+        (name: string, _config: unknown, handler: ToolHandler) => {
           registeredHandlers.set(name, handler);
         }
       ),
@@ -34,10 +34,9 @@ describe("wrapWithLogging", () => {
     wrapWithLogging(mockServer);
 
     // Register a tool through the wrapped server
-    (mockServer.tool as unknown as Function)(
+    (mockServer.registerTool as unknown as Function)(
       "test_tool",
-      "description",
-      {},
+      { title: "Test tool", description: "description" },
       async () => ({
         content: [{ type: "text", text: "success" }],
       })
@@ -57,10 +56,9 @@ describe("wrapWithLogging", () => {
   it("logs structured JSON with status error when result has isError", async () => {
     wrapWithLogging(mockServer);
 
-    (mockServer.tool as unknown as Function)(
+    (mockServer.registerTool as unknown as Function)(
       "failing_tool",
-      "description",
-      {},
+      { title: "Failing tool", description: "description" },
       async () => ({
         isError: true,
         content: [{ type: "text", text: "Error: something broke" }],

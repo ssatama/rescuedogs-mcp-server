@@ -5,10 +5,19 @@ import { formatStatisticsMarkdown } from "../services/formatters.js";
 import { GetStatisticsInputSchema } from "../schemas/index.js";
 
 export function registerGetStatisticsTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "rescuedogs_get_statistics",
-    "Get overall statistics about available rescue dogs on the platform.",
-    GetStatisticsInputSchema.shape,
+    {
+      title: "Get platform statistics",
+      description: "Get overall statistics about available rescue dogs on the platform.",
+      inputSchema: GetStatisticsInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
     async (input) => {
       try {
         const parsed = GetStatisticsInputSchema.parse(input);

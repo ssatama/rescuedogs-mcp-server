@@ -10,10 +10,19 @@ import {
 } from "../utils/mappings.js";
 
 export function registerGetFilterCountsTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "rescuedogs_get_filter_counts",
-    "Get available filter options with counts based on current filter context. Use this to show users valid filter choices that won't result in empty searches.",
-    GetFilterCountsInputSchema.shape,
+    {
+      title: "Get filter options",
+      description: "Get available filter options with counts based on current filter context. Use this to show users valid filter choices that won't result in empty searches.",
+      inputSchema: GetFilterCountsInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
     async (input) => {
       try {
         const parsed = GetFilterCountsInputSchema.parse(input);

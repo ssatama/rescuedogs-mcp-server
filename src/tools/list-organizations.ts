@@ -6,10 +6,19 @@ import { ListOrganizationsInputSchema } from "../schemas/index.js";
 import { normalizeCountryForApi } from "../utils/mappings.js";
 
 export function registerListOrganizationsTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "rescuedogs_list_organizations",
-    "List rescue organizations with their statistics and available dogs count.",
-    ListOrganizationsInputSchema.shape,
+    {
+      title: "List rescue organizations",
+      description: "List rescue organizations with their statistics and available dogs count.",
+      inputSchema: ListOrganizationsInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
     async (input) => {
       try {
         const parsed = ListOrganizationsInputSchema.parse(input);
