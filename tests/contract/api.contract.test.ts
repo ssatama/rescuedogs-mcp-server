@@ -15,6 +15,14 @@ import type { Dog } from "../../src/types.js";
 
 const TIMEOUT = 30_000;
 
+const KNOWN_COMPATIBILITY = [
+  "yes",
+  "no",
+  "unknown",
+  "older_children",
+  "selective",
+];
+
 describe("live API contract", () => {
   let dogs: Dog[];
 
@@ -40,27 +48,51 @@ describe("live API contract", () => {
     expect(profiled.some((d) => d.dog_profiler_data?.description)).toBe(true);
   });
 
-  it("reports compatibility as the tri-state strings the formatter expects", () => {
-    const values = dogs
-      .flatMap((d) => [
-        d.dog_profiler_data?.good_with_children,
-        d.dog_profiler_data?.good_with_dogs,
-        d.dog_profiler_data?.good_with_cats,
-      ])
-      .filter((v) => v !== null && v !== undefined);
+  it(
+    "reports only compatibility values the formatter has a label for",
+    async () => {
+      // "older_children" and "selective" appear in roughly 1 in 75 dogs, so a
+      // small page can miss them entirely. Sample deep enough that a new value
+      // fails here rather than being silently dropped from the rendered profile.
+      const pages = await Promise.all(
+        [0, 100, 200, 300, 400, 500].map((offset) =>
+          apiClient.searchDogs({ limit: 100, offset })
+        )
+      );
+      const values = pages
+        .flat()
+        .flatMap((d) => [
+          d.dog_profiler_data?.good_with_children,
+          d.dog_profiler_data?.good_with_dogs,
+          d.dog_profiler_data?.good_with_cats,
+        ])
+        .filter((v): v is NonNullable<typeof v> => v !== null && v !== undefined);
 
-    expect(values.length).toBeGreaterThan(0);
-    for (const value of values) {
-      expect(["yes", "no", "unknown"]).toContain(value);
-    }
-  });
+      expect(values.length).toBeGreaterThan(0);
+      expect([...new Set(values)].sort()).toEqual(
+        expect.arrayContaining(["no", "unknown", "yes"])
+      );
+      for (const value of values) {
+        expect(KNOWN_COMPATIBILITY).toContain(value);
+      }
+    },
+    TIMEOUT
+  );
 
   it(
     "getDogBySlug resolves and returns the same profiler shape",
     async () => {
-      const dog = await apiClient.getDogBySlug(dogs[0]!.slug);
-      expect(dog.slug).toBe(dogs[0]!.slug);
+      const profiled = dogs.find((d) => d.dog_profiler_data?.tagline)!;
+      expect(profiled).toBeDefined();
+
+      const dog = await apiClient.getDogBySlug(profiled.slug);
+      expect(dog.slug).toBe(profiled.slug);
       expect(typeof dog.adoption_url).toBe("string");
+
+      // The invariant that lets getEnhancedDogData go away: the detail
+      // endpoint carries the profiler block inline, same as the list endpoint.
+      expect(dog.dog_profiler_data).toBeTruthy();
+      expect(dog.dog_profiler_data?.tagline).toBe(profiled.dog_profiler_data?.tagline);
     },
     TIMEOUT
   );

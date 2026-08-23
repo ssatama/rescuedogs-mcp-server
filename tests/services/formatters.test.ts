@@ -69,6 +69,21 @@ describe("formatDogMarkdown", () => {
     expect(result).not.toContain("**Dogs:**");
   });
 
+  it("renders the qualified compatibility values the API also returns", () => {
+    const result = formatDogMarkdown({
+      ...mockDog,
+      dog_profiler_data: {
+        ...mockDog.dog_profiler_data,
+        good_with_children: "older_children",
+        good_with_dogs: "selective",
+      },
+    });
+    // Dropping these would make a child-safety caveat indistinguishable from
+    // having no data at all.
+    expect(result).toContain("**Children:** Older children only");
+    expect(result).toContain("**Dogs:** Selective");
+  });
+
   it("includes requirements section with formatted enum values", () => {
     const result = formatDogMarkdown(mockDog);
     expect(result).toContain("Energy Level");

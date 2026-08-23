@@ -12,6 +12,24 @@ import {
 } from "../utils/mappings.js";
 import { DISPLAY_LIMITS } from "../constants.js";
 
+function normalizeOrgName(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+// The forms a user plausibly types for an organization: its full name, the
+// name without a trailing German "e.V.", and an acronym that precedes a
+// parenthetical expansion. Matching stays exact against this set — substring
+// matching is what made a dog named "Daisy" resolve to "Daisy Family Rescue".
+function orgNameAliases(name: string): string[] {
+  return [
+    name,
+    name.replace(/\s*\(.*?\)\s*/g, " "),
+    name.replace(/[\s,]*e\.?\s*v\.?\s*$/i, ""),
+  ]
+    .map(normalizeOrgName)
+    .filter(Boolean);
+}
+
 export function registerSearchDogsTool(server: McpServer): void {
   server.tool(
     "rescuedogs_search_dogs",
@@ -41,11 +59,9 @@ export function registerSearchDogsTool(server: McpServer): void {
             cacheService.setOrganizations(orgs);
           }
 
-          const normalize = (value: string): string =>
-            value.trim().toLowerCase().replace(/\s+/g, " ");
-          const normalizedQuery = normalize(searchQuery);
-          const matchedOrg = orgs.find(
-            (o) => normalize(o.name) === normalizedQuery
+          const normalizedQuery = normalizeOrgName(searchQuery);
+          const matchedOrg = orgs.find((o) =>
+            orgNameAliases(o.name).includes(normalizedQuery)
           );
 
           if (matchedOrg) {

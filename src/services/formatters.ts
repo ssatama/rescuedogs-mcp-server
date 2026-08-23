@@ -95,11 +95,20 @@ function formatProfileSections(data: DogProfilerData, parts: string[]): void {
   }
 }
 
-// The API reports compatibility as "yes" | "no" | "unknown". "unknown" is
-// omitted rather than rendered, so the model never reads absence of data as a no.
+// Only "unknown" is omitted, so the model never reads absence of data as a no.
+// Every other value is rendered: dropping "older_children" would hide a
+// child-safety caveat behind what looks like missing data.
+const COMPATIBILITY_LABELS: Record<Compatibility, string | null> = {
+  yes: "Yes",
+  no: "No",
+  older_children: "Older children only",
+  selective: "Selective",
+  unknown: null,
+};
+
 function formatCompatibility(data: DogProfilerData): string[] {
   const label = (v: Compatibility | null | undefined): string | null =>
-    v === "yes" ? "Yes" : v === "no" ? "No" : null;
+    v ? (COMPATIBILITY_LABELS[v] ?? null) : null;
 
   return (
     [

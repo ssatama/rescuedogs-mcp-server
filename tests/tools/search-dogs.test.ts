@@ -88,6 +88,38 @@ describe("rescuedogs_search_dogs handler", () => {
     );
   });
 
+  it("matches an org name without its e.V. suffix", async () => {
+    vi.mocked(cacheService.getOrganizations).mockReturnValue([
+      { ...mockOrganization, id: 12, name: "Daisy Family Rescue e.V." },
+    ]);
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ query: "Daisy Family Rescue" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ organization_id: 12, search: undefined })
+    );
+  });
+
+  it("matches an org acronym that precedes a parenthetical expansion", async () => {
+    vi.mocked(cacheService.getOrganizations).mockReturnValue([
+      {
+        ...mockOrganization,
+        id: 7,
+        name: "REAN (Rescuing European Animals in Need)",
+      },
+    ]);
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ query: "REAN" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ organization_id: 7, search: undefined })
+    );
+  });
+
   it("matches an org name case- and whitespace-insensitively", async () => {
     vi.mocked(cacheService.getOrganizations).mockReturnValue([
       mockOrganization,

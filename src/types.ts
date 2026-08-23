@@ -205,7 +205,14 @@ export type ExperienceLevel =
   | "some_experience"
   | "experienced_only";
 export type ImagePreset = "thumbnail" | "medium";
-export type Compatibility = "yes" | "no" | "unknown";
+// Values observed across the live catalogue. "older_children" and "selective"
+// are real qualified answers, not variants of "unknown".
+export type Compatibility =
+  | "yes"
+  | "no"
+  | "unknown"
+  | "older_children"
+  | "selective";
 
 // API Response wrappers
 export interface PaginatedResponse<T> {
