@@ -12,13 +12,11 @@ import {
 import {
   mockDog,
   mockDogMinimal,
-  mockEnhancedData,
   mockOrganization,
   mockBreedStats,
   mockStatistics,
   mockFilterCounts,
 } from "../fixtures/dogs.js";
-import type { EnhancedDogData } from "../../src/types.js";
 
 describe("truncateIfNeeded", () => {
   it("returns short text unchanged", () => {
@@ -41,48 +39,68 @@ describe("truncateIfNeeded", () => {
 
 describe("formatDogMarkdown", () => {
   it("includes dog name, breed, age, and adoption URL", () => {
-    const result = formatDogMarkdown(mockDog, mockEnhancedData);
+    const result = formatDogMarkdown(mockDog);
     expect(result).toContain("# Buddy");
     expect(result).toContain("Golden Retriever");
     expect(result).toContain("2 years");
     expect(result).toContain(mockDog.adoption_url);
   });
 
-  it("includes enhanced data sections when provided", () => {
-    const result = formatDogMarkdown(mockDog, mockEnhancedData);
+  it("renders every profiler section from inline dog_profiler_data", () => {
+    const result = formatDogMarkdown(mockDog);
     expect(result).toContain("Your new best friend!");
-    expect(result).toContain("Buddy is a friendly golden retriever who loves long walks.");
+    expect(result).toContain("Buddy is a friendly golden retriever.");
     expect(result).toContain("Friendly");
     expect(result).toContain("Fetch");
-    expect(result).toContain("A family with a garden");
-    expect(result).toContain("Needs a garden");
     expect(result).toContain("Can catch a frisbee mid-air!");
   });
 
+  it("splits semicolon-separated special_needs into bullets", () => {
+    const result = formatDogMarkdown(mockDog);
+    expect(result).toContain("- Needs a garden");
+    expect(result).toContain("- not good with cats");
+  });
+
+  it("renders yes/no compatibility and omits unknown", () => {
+    const result = formatDogMarkdown(mockDog);
+    expect(result).toContain("**Children:** Yes");
+    expect(result).toContain("**Cats:** No");
+    // "unknown" must not be rendered at all - absence of data is not a "No"
+    expect(result).not.toContain("**Dogs:**");
+  });
+
+  it("renders the qualified compatibility values the API also returns", () => {
+    const result = formatDogMarkdown({
+      ...mockDog,
+      dog_profiler_data: {
+        ...mockDog.dog_profiler_data,
+        good_with_children: "older_children",
+        good_with_dogs: "selective",
+      },
+    });
+    // Dropping these would make a child-safety caveat indistinguishable from
+    // having no data at all.
+    expect(result).toContain("**Children:** Older children only");
+    expect(result).toContain("**Dogs:** Selective");
+  });
+
   it("includes requirements section with formatted enum values", () => {
-    const result = formatDogMarkdown(mockDog, mockEnhancedData);
+    const result = formatDogMarkdown(mockDog);
     expect(result).toContain("Energy Level");
     expect(result).toContain("High");
     expect(result).toContain("Home Type");
     expect(result).toContain("House Preferred");
   });
 
-  it("handles null enhanced data gracefully", () => {
-    const result = formatDogMarkdown(mockDog, null);
-    expect(result).toContain("# Buddy");
-    expect(result).toContain(mockDog.adoption_url);
-    // Falls back to dog_profiler_data
-    expect(result).toContain("Buddy is a friendly golden retriever.");
-  });
-
-  it("handles undefined enhanced data", () => {
-    const result = formatDogMarkdown(mockDog);
-    expect(result).toContain("# Buddy");
-    expect(result).toContain(mockDog.adoption_url);
+  it("handles a dog with no profiler data", () => {
+    const result = formatDogMarkdown(mockDogMinimal);
+    expect(result).toContain("# Rex");
+    expect(result).toContain(mockDogMinimal.adoption_url);
+    expect(result).not.toContain("## About");
   });
 
   it("handles minimal dog with no optional fields", () => {
-    const result = formatDogMarkdown(mockDogMinimal, null);
+    const result = formatDogMarkdown(mockDogMinimal);
     expect(result).toContain("# Rex");
     expect(result).toContain(mockDogMinimal.adoption_url);
     // Should not crash on null breed, age, etc.
@@ -109,15 +127,13 @@ describe("formatDogsListMarkdown", () => {
     expect(result).toContain("Rex");
   });
 
-  it("includes enhanced data tagline when available", () => {
-    const enhancedMap = new Map<number, EnhancedDogData>();
-    enhancedMap.set(mockDog.id, mockEnhancedData);
-    const result = formatDogsListMarkdown([mockDog], enhancedMap);
+  it("includes tagline from inline profiler data when available", () => {
+    const result = formatDogsListMarkdown([mockDog]);
     expect(result).toContain("Your new best friend!");
   });
 
   it("shows pagination info with more results available", () => {
-    const result = formatDogsListMarkdown([mockDog], undefined, {
+    const result = formatDogsListMarkdown([mockDog], {
       offset: 0,
       limit: 1,
     });
@@ -126,7 +142,7 @@ describe("formatDogsListMarkdown", () => {
   });
 
   it("shows pagination info without more results", () => {
-    const result = formatDogsListMarkdown([mockDog], undefined, {
+    const result = formatDogsListMarkdown([mockDog], {
       offset: 0,
       limit: 10,
     });

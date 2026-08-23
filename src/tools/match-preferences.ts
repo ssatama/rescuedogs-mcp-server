@@ -3,7 +3,6 @@ import { apiClient } from "../services/api-client.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
 import { MatchPreferencesInputSchema } from "../schemas/index.js";
-import type { EnhancedDogData } from "../types.js";
 import {
   normalizeCountryForApi,
   HOME_TYPE_MAP,
@@ -34,22 +33,6 @@ export function registerMatchPreferencesTool(server: McpServer): void {
           limit: parsed.limit,
         });
 
-        // Fetch enhanced data
-        let enhancedMap: Map<number, EnhancedDogData> | undefined;
-        if (dogs.length > 0) {
-          try {
-            const enhancedData = await apiClient.getBulkEnhancedData(
-              dogs.map((d) => d.id)
-            );
-            enhancedMap = new Map(enhancedData.map((e) => [e.id, e]));
-          } catch (error) {
-            console.error(
-              "Enhanced data fetch failed:",
-              error instanceof Error ? error.message : error
-            );
-          }
-        }
-
         if (parsed.response_format === "json") {
           return {
             content: [
@@ -72,10 +55,7 @@ export function registerMatchPreferencesTool(server: McpServer): void {
                         good_with_cats: parsed.has_cats,
                       }),
                     },
-                    dogs: dogs.map((d) => ({
-                      ...d,
-                      enhanced: enhancedMap?.get(d.id) || null,
-                    })),
+                    dogs,
                   },
                   null,
                   2
@@ -120,7 +100,7 @@ ${compatibilityLines}
           type: "text" as const,
           text:
             header +
-            formatDogsListMarkdown(dogs, enhancedMap, {
+            formatDogsListMarkdown(dogs, {
               offset: 0,
               limit: parsed.limit ?? 5,
             }),

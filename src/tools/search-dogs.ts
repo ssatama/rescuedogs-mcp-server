@@ -4,13 +4,31 @@ import { cacheService } from "../services/cache-service.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
 import { SearchDogsInputSchema } from "../schemas/index.js";
-import type { EnhancedDogData, ImagePreset, Organization } from "../types.js";
+import type { ImagePreset, Organization } from "../types.js";
 import {
   AGE_CATEGORY_MAP,
   SEX_MAP,
   normalizeCountryForApi,
 } from "../utils/mappings.js";
 import { DISPLAY_LIMITS } from "../constants.js";
+
+function normalizeOrgName(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+// The forms a user plausibly types for an organization: its full name, the
+// name without a trailing German "e.V.", and an acronym that precedes a
+// parenthetical expansion. Matching stays exact against this set — substring
+// matching is what made a dog named "Daisy" resolve to "Daisy Family Rescue".
+function orgNameAliases(name: string): string[] {
+  return [
+    name,
+    name.replace(/\s*\(.*?\)\s*/g, " "),
+    name.replace(/[\s,]*e\.?\s*v\.?\s*$/i, ""),
+  ]
+    .map(normalizeOrgName)
+    .filter(Boolean);
+}
 
 export function registerSearchDogsTool(server: McpServer): void {
   server.tool(
@@ -26,7 +44,11 @@ export function registerSearchDogsTool(server: McpServer): void {
           ? AGE_CATEGORY_MAP[parsed.age_category]
           : undefined;
 
-        // Check if query matches an organization name
+        // A query that is exactly an organization's name is a request for that
+        // organization's dogs, so swap it for an organization_id filter. The
+        // match must be exact: substring matching treated a dog named "Daisy"
+        // as a request for "Daisy Family Rescue e.V.", returning that org's
+        // whole roster and hiding every actual Daisy.
         let organizationId = parsed.organization_id;
         let searchQuery = parsed.query;
 
@@ -37,11 +59,9 @@ export function registerSearchDogsTool(server: McpServer): void {
             cacheService.setOrganizations(orgs);
           }
 
-          const queryLower = searchQuery.toLowerCase();
-          const matchedOrg = orgs.find(
-            (o) =>
-              o.name.toLowerCase().includes(queryLower) ||
-              queryLower.includes(o.name.toLowerCase())
+          const normalizedQuery = normalizeOrgName(searchQuery);
+          const matchedOrg = orgs.find((o) =>
+            orgNameAliases(o.name).includes(normalizedQuery)
           );
 
           if (matchedOrg) {
@@ -71,22 +91,6 @@ export function registerSearchDogsTool(server: McpServer): void {
           offset: parsed.offset,
         });
 
-        // Fetch enhanced data for all dogs in parallel
-        let enhancedMap: Map<number, EnhancedDogData> | undefined;
-        if (dogs.length > 0) {
-          try {
-            const enhancedData = await apiClient.getBulkEnhancedData(
-              dogs.map((d) => d.id)
-            );
-            enhancedMap = new Map(enhancedData.map((e) => [e.id, e]));
-          } catch (error) {
-            console.error(
-              "Enhanced data fetch failed:",
-              error instanceof Error ? error.message : error
-            );
-          }
-        }
-
         if (parsed.response_format === "json") {
           return {
             content: [
@@ -95,10 +99,7 @@ export function registerSearchDogsTool(server: McpServer): void {
                 text: JSON.stringify(
                   {
                     count: dogs.length,
-                    dogs: dogs.map((d) => ({
-                      ...d,
-                      enhanced: enhancedMap?.get(d.id) || null,
-                    })),
+                    dogs,
                     has_more: dogs.length === parsed.limit,
                   },
                   null,
@@ -118,7 +119,7 @@ export function registerSearchDogsTool(server: McpServer): void {
         // Add text content
         content.push({
           type: "text" as const,
-          text: formatDogsListMarkdown(dogs, enhancedMap, {
+          text: formatDogsListMarkdown(dogs, {
             offset: parsed.offset ?? 0,
             limit: parsed.limit ?? 10,
           }),

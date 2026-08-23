@@ -2,14 +2,12 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createMockServer } from "../helpers/mock-server.js";
 import {
   mockDog,
-  mockEnhancedData,
   mockImageContent,
 } from "../fixtures/dogs.js";
 
 vi.mock("../../src/services/api-client.js", () => ({
   apiClient: {
     getDogBySlug: vi.fn(),
-    getEnhancedDogData: vi.fn(),
   },
 }));
 
@@ -33,7 +31,6 @@ describe("rescuedogs_get_dog_details handler", () => {
 
   it("returns markdown with image when include_image is true", async () => {
     vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
-    vi.mocked(apiClient.getEnhancedDogData).mockResolvedValue(mockEnhancedData);
     vi.mocked(fetchDogImage).mockResolvedValue(mockImageContent);
 
     const handler = getHandler("rescuedogs_get_dog_details");
@@ -49,7 +46,6 @@ describe("rescuedogs_get_dog_details handler", () => {
 
   it("returns only text when include_image is false", async () => {
     vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
-    vi.mocked(apiClient.getEnhancedDogData).mockResolvedValue(mockEnhancedData);
 
     const handler = getHandler("rescuedogs_get_dog_details");
     const result = await handler({
@@ -64,7 +60,6 @@ describe("rescuedogs_get_dog_details handler", () => {
 
   it("passes image_preset correctly to fetchDogImage", async () => {
     vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
-    vi.mocked(apiClient.getEnhancedDogData).mockResolvedValue(mockEnhancedData);
     vi.mocked(fetchDogImage).mockResolvedValue(null);
 
     const handler = getHandler("rescuedogs_get_dog_details");
@@ -82,9 +77,6 @@ describe("rescuedogs_get_dog_details handler", () => {
 
   it("continues with null enhanced data on enhanced fetch failure", async () => {
     vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
-    vi.mocked(apiClient.getEnhancedDogData).mockRejectedValue(
-      new Error("Enhanced API down")
-    );
 
     const handler = getHandler("rescuedogs_get_dog_details");
     const result = await handler({
@@ -96,9 +88,8 @@ describe("rescuedogs_get_dog_details handler", () => {
     expect(result.content[0]!.text).toContain("Buddy");
   });
 
-  it("returns JSON format with enhanced field", async () => {
+  it("returns JSON carrying the inline profiler data", async () => {
     vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
-    vi.mocked(apiClient.getEnhancedDogData).mockResolvedValue(mockEnhancedData);
 
     const handler = getHandler("rescuedogs_get_dog_details");
     const result = await handler({
@@ -108,24 +99,16 @@ describe("rescuedogs_get_dog_details handler", () => {
 
     const parsed = JSON.parse(result.content[0]!.text!);
     expect(parsed.name).toBe("Buddy");
-    expect(parsed.enhanced).toBeTruthy();
-    expect(parsed.enhanced.tagline).toBe("Your new best friend!");
+    expect(parsed.dog_profiler_data.tagline).toBe("Your new best friend!");
   });
 
-  it("returns JSON with enhanced: null on enhanced failure", async () => {
+  it("fetches the dog in a single request", async () => {
     vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
-    vi.mocked(apiClient.getEnhancedDogData).mockRejectedValue(
-      new Error("fail")
-    );
 
     const handler = getHandler("rescuedogs_get_dog_details");
-    const result = await handler({
-      slug: "buddy-golden-retriever",
-      response_format: "json",
-    });
+    await handler({ slug: "buddy-golden-retriever" });
 
-    const parsed = JSON.parse(result.content[0]!.text!);
-    expect(parsed.enhanced).toBeNull();
+    expect(apiClient.getDogBySlug).toHaveBeenCalledOnce();
   });
 
   it("returns isError when slug is missing (Zod validation)", async () => {

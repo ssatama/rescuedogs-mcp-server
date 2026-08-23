@@ -69,35 +69,7 @@ describe("ApiClient", () => {
 
       expect(result).toEqual(mockDog);
       const config = mockRequest.mock.calls[0]![0];
-      expect(config.url).toBe("/api/animals/buddy-golden/");
-    });
-  });
-
-  describe("getEnhancedDogData", () => {
-    it("calls correct URL with animal ID", async () => {
-      const mockData = { id: 101, bio: "A friendly dog" };
-      mockRequest.mockResolvedValue({ data: mockData });
-
-      const result = await apiClient.getEnhancedDogData(101);
-
-      expect(result).toEqual(mockData);
-      const config = mockRequest.mock.calls[0]![0];
-      expect(config.url).toBe("/api/enhanced_animals/101/enhanced/");
-    });
-  });
-
-  describe("getBulkEnhancedData", () => {
-    it("sends POST with animal IDs array", async () => {
-      const mockData = [{ id: 101 }, { id: 102 }];
-      mockRequest.mockResolvedValue({ data: mockData });
-
-      const result = await apiClient.getBulkEnhancedData([101, 102]);
-
-      expect(result).toEqual(mockData);
-      const config = mockRequest.mock.calls[0]![0];
-      expect(config.method).toBe("POST");
-      expect(config.url).toBe("/api/enhanced_animals/enhanced/bulk/");
-      expect(config.data).toEqual({ animal_ids: [101, 102] });
+      expect(config.url).toBe("/api/animals/buddy-golden");
     });
   });
 
@@ -110,7 +82,7 @@ describe("ApiClient", () => {
 
       expect(result).toEqual(mockStats);
       const config = mockRequest.mock.calls[0]![0];
-      expect(config.url).toBe("/api/animals/breeds/stats/");
+      expect(config.url).toBe("/api/animals/breeds/stats");
     });
   });
 
@@ -123,7 +95,7 @@ describe("ApiClient", () => {
 
       expect(result).toEqual(mockStats);
       const config = mockRequest.mock.calls[0]![0];
-      expect(config.url).toBe("/api/animals/statistics/");
+      expect(config.url).toBe("/api/animals/statistics");
     });
   });
 
@@ -139,7 +111,7 @@ describe("ApiClient", () => {
 
       expect(result).toEqual(mockCounts);
       const config = mockRequest.mock.calls[0]![0];
-      expect(config.url).toContain("/api/animals/meta/filter_counts/");
+      expect(config.url).toContain("/api/animals/meta/filter_counts?");
       expect(config.url).toContain("status=available");
       expect(config.url).toContain("breed=Golden+Retriever");
       expect(config.url).toContain("sex=Male");

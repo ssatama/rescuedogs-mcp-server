@@ -32,38 +32,23 @@ export interface Dog {
 }
 
 export interface DogProfilerData {
-  description?: string;
-  tagline?: string;
-  bio?: string;
-  looking_for?: string;
-  personality_traits?: string[];
-  interests?: string[];
-  deal_breakers?: string[];
-  fun_fact?: string;
-  energy_level?: EnergyLevel;
-  home_type?: HomeType;
-  experience_level?: ExperienceLevel;
-  quality_score?: number;
-}
-
-export interface EnhancedDogData {
-  id: number;
-  enhanced_description: string | null;
-  tagline: string | null;
-  bio: string | null;
-  looking_for: string | null;
-  personality_traits: string[] | null;
-  interests: string[] | null;
-  deal_breakers: string[] | null;
-  fun_fact: string | null;
-  energy_level: string | null;
-  home_type: string | null;
-  experience_level: string | null;
-  quality_score: number | null;
-  good_with_kids: boolean | null;
-  good_with_dogs: boolean | null;
-  good_with_cats: boolean | null;
-  good_with_strangers: boolean | null;
+  tagline?: string | null;
+  description?: string | null;
+  personality_traits?: string[] | null;
+  favorite_activities?: string[] | null;
+  unique_quirk?: string | null;
+  special_needs?: string | null;
+  medical_needs?: string | null;
+  energy_level?: EnergyLevel | null;
+  home_type?: HomeType | null;
+  experience_level?: ExperienceLevel | null;
+  sociability?: string | null;
+  trainability?: string | null;
+  exercise_needs?: string | null;
+  grooming_needs?: string | null;
+  good_with_children?: Compatibility | null;
+  good_with_dogs?: Compatibility | null;
+  good_with_cats?: Compatibility | null;
 }
 
 export interface Organization {
@@ -220,6 +205,14 @@ export type ExperienceLevel =
   | "some_experience"
   | "experienced_only";
 export type ImagePreset = "thumbnail" | "medium";
+// Values observed across the live catalogue. "older_children" and "selective"
+// are real qualified answers, not variants of "unknown".
+export type Compatibility =
+  | "yes"
+  | "no"
+  | "unknown"
+  | "older_children"
+  | "selective";
 
 // API Response wrappers
 export interface PaginatedResponse<T> {

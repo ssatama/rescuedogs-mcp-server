@@ -1,6 +1,5 @@
 import type {
   Dog,
-  EnhancedDogData,
   Organization,
   BreedStats,
   Statistics,
@@ -54,11 +53,23 @@ export const mockDog: Dog = {
   language: "en",
   properties: {},
   dog_profiler_data: {
-    bio: "Buddy is a friendly golden retriever.",
+    tagline: "Your new best friend!",
+    description: "Buddy is a friendly golden retriever.",
     personality_traits: ["Friendly", "Playful"],
+    favorite_activities: ["Fetch", "Swimming"],
+    unique_quirk: "Can catch a frisbee mid-air!",
+    special_needs: "Needs a garden; not good with cats",
+    medical_needs: null,
     energy_level: "high",
     home_type: "house_preferred",
     experience_level: "first_time_ok",
+    sociability: "very_social",
+    trainability: "easy",
+    exercise_needs: "high",
+    grooming_needs: "weekly",
+    good_with_children: "yes",
+    good_with_dogs: "unknown",
+    good_with_cats: "no",
   },
   created_at: "2024-01-15T00:00:00Z",
   updated_at: "2024-06-01T00:00:00Z",
@@ -98,26 +109,6 @@ export const mockDogMinimal: Dog = {
   last_scraped_at: null,
   availability_confidence: "medium",
   organization: null,
-};
-
-export const mockEnhancedData: EnhancedDogData = {
-  id: 101,
-  enhanced_description: "A wonderful family dog who loves everyone.",
-  tagline: "Your new best friend!",
-  bio: "Buddy is a friendly golden retriever who loves long walks.",
-  looking_for: "A family with a garden and lots of love.",
-  personality_traits: ["Friendly", "Playful", "Loyal"],
-  interests: ["Fetch", "Swimming", "Belly rubs"],
-  deal_breakers: ["Needs a garden", "Not good with cats"],
-  fun_fact: "Can catch a frisbee mid-air!",
-  energy_level: "high",
-  home_type: "house_preferred",
-  experience_level: "first_time_ok",
-  quality_score: 85,
-  good_with_kids: true,
-  good_with_dogs: true,
-  good_with_cats: false,
-  good_with_strangers: true,
 };
 
 export const mockBreedStats: BreedStats = {
@@ -243,8 +234,13 @@ export const mockDog2: Dog = {
   language: "en",
   properties: {},
   dog_profiler_data: {
-    bio: "Luna is a sweet labrador mix.",
+    tagline: "Sweet and gentle Luna",
+    description: "Luna is a sweet labrador mix.",
     personality_traits: ["Sweet", "Gentle"],
+    favorite_activities: ["Cuddles"],
+    unique_quirk: null,
+    special_needs: null,
+    medical_needs: null,
     energy_level: "medium",
     home_type: "apartment_ok",
     experience_level: "first_time_ok",
@@ -254,26 +250,6 @@ export const mockDog2: Dog = {
   last_scraped_at: "2024-06-15T00:00:00Z",
   availability_confidence: "high",
   organization: mockOrganization,
-};
-
-export const mockEnhancedData2: EnhancedDogData = {
-  id: 202,
-  enhanced_description: "A gentle soul who loves cuddles.",
-  tagline: "Sweet and gentle Luna",
-  bio: "Luna is a sweet labrador mix looking for a loving home.",
-  looking_for: "A calm home with patient owners.",
-  personality_traits: ["Sweet", "Gentle", "Calm"],
-  interests: ["Walks", "Napping", "Treats"],
-  deal_breakers: ["No loud households"],
-  fun_fact: "Does a little dance when she sees her leash!",
-  energy_level: "medium",
-  home_type: "apartment_ok",
-  experience_level: "first_time_ok",
-  quality_score: 78,
-  good_with_kids: true,
-  good_with_dogs: true,
-  good_with_cats: true,
-  good_with_strangers: false,
 };
 
 export const mockImageContent = {

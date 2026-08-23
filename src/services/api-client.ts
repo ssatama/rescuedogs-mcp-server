@@ -10,7 +10,6 @@ const require = createRequire(import.meta.url);
 const { version } = require("../../package.json") as { version: string };
 import type {
   Dog,
-  EnhancedDogData,
   Organization,
   BreedStats,
   Statistics,
@@ -179,36 +178,21 @@ class ApiClient {
   async getDogBySlug(slug: string): Promise<Dog> {
     return this.request<Dog>({
       method: "GET",
-      url: `/api/animals/${encodeURIComponent(slug)}/`,
-    });
-  }
-
-  async getEnhancedDogData(animalId: number): Promise<EnhancedDogData> {
-    return this.request<EnhancedDogData>({
-      method: "GET",
-      url: `/api/enhanced_animals/${animalId}/enhanced/`,
-    });
-  }
-
-  async getBulkEnhancedData(animalIds: number[]): Promise<EnhancedDogData[]> {
-    return this.request<EnhancedDogData[]>({
-      method: "POST",
-      url: "/api/enhanced_animals/enhanced/bulk/",
-      data: { animal_ids: animalIds },
+      url: `/api/animals/${encodeURIComponent(slug)}`,
     });
   }
 
   async getBreedStats(): Promise<BreedStats> {
     return this.request<BreedStats>({
       method: "GET",
-      url: "/api/animals/breeds/stats/",
+      url: "/api/animals/breeds/stats",
     });
   }
 
   async getStatistics(): Promise<Statistics> {
     return this.request<Statistics>({
       method: "GET",
-      url: "/api/animals/statistics/",
+      url: "/api/animals/statistics",
     });
   }
 
@@ -234,7 +218,7 @@ class ApiClient {
 
     return this.request<FilterCountsResponse>({
       method: "GET",
-      url: `/api/animals/meta/filter_counts/?${queryParams.toString()}`,
+      url: `/api/animals/meta/filter_counts?${queryParams.toString()}`,
     });
   }
 
