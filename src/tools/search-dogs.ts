@@ -4,7 +4,7 @@ import { cacheService } from "../services/cache-service.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
 import { SearchDogsInputSchema } from "../schemas/index.js";
-import type { EnhancedDogData, ImagePreset, Organization } from "../types.js";
+import type { ImagePreset, Organization } from "../types.js";
 import {
   AGE_CATEGORY_MAP,
   SEX_MAP,
@@ -71,22 +71,6 @@ export function registerSearchDogsTool(server: McpServer): void {
           offset: parsed.offset,
         });
 
-        // Fetch enhanced data for all dogs in parallel
-        let enhancedMap: Map<number, EnhancedDogData> | undefined;
-        if (dogs.length > 0) {
-          try {
-            const enhancedData = await apiClient.getBulkEnhancedData(
-              dogs.map((d) => d.id)
-            );
-            enhancedMap = new Map(enhancedData.map((e) => [e.id, e]));
-          } catch (error) {
-            console.error(
-              "Enhanced data fetch failed:",
-              error instanceof Error ? error.message : error
-            );
-          }
-        }
-
         if (parsed.response_format === "json") {
           return {
             content: [
@@ -95,10 +79,7 @@ export function registerSearchDogsTool(server: McpServer): void {
                 text: JSON.stringify(
                   {
                     count: dogs.length,
-                    dogs: dogs.map((d) => ({
-                      ...d,
-                      enhanced: enhancedMap?.get(d.id) || null,
-                    })),
+                    dogs,
                     has_more: dogs.length === parsed.limit,
                   },
                   null,
@@ -118,7 +99,7 @@ export function registerSearchDogsTool(server: McpServer): void {
         // Add text content
         content.push({
           type: "text" as const,
-          text: formatDogsListMarkdown(dogs, enhancedMap, {
+          text: formatDogsListMarkdown(dogs, {
             offset: parsed.offset ?? 0,
             limit: parsed.limit ?? 10,
           }),

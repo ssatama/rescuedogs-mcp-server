@@ -3,8 +3,6 @@ import { createMockServer } from "../helpers/mock-server.js";
 import {
   mockDog,
   mockDog2,
-  mockEnhancedData,
-  mockEnhancedData2,
   mockOrganization,
   mockImageContent,
 } from "../fixtures/dogs.js";
@@ -12,7 +10,6 @@ import {
 vi.mock("../../src/services/api-client.js", () => ({
   apiClient: {
     searchDogs: vi.fn(),
-    getBulkEnhancedData: vi.fn(),
     getOrganizations: vi.fn(),
   },
 }));
@@ -45,9 +42,6 @@ describe("rescuedogs_search_dogs handler", () => {
 
   it("calls searchDogs with correct params", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_search_dogs");
     const result = await handler({ breed: "Golden Retriever" });
@@ -60,7 +54,6 @@ describe("rescuedogs_search_dogs handler", () => {
 
   it('maps age_category "puppy" to "Puppy"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([]);
 
     const handler = getHandler("rescuedogs_search_dogs");
     await handler({ age_category: "puppy" });
@@ -72,7 +65,6 @@ describe("rescuedogs_search_dogs handler", () => {
 
   it('maps sex "male" to "Male"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([]);
 
     const handler = getHandler("rescuedogs_search_dogs");
     await handler({ sex: "male" });
@@ -87,9 +79,6 @@ describe("rescuedogs_search_dogs handler", () => {
       mockOrganization,
     ]);
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_search_dogs");
     await handler({ query: "Happy Paws" });
@@ -108,9 +97,6 @@ describe("rescuedogs_search_dogs handler", () => {
       mockOrganization,
     ]);
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_search_dogs");
     await handler({ query: "Happy Paws" });
@@ -137,9 +123,6 @@ describe("rescuedogs_search_dogs handler", () => {
 
   it("continues without enhanced data on failure", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockRejectedValue(
-      new Error("Enhanced API down")
-    );
 
     const handler = getHandler("rescuedogs_search_dogs");
     const result = await handler({});
@@ -150,10 +133,6 @@ describe("rescuedogs_search_dogs handler", () => {
 
   it("calls fetchDogImages when include_images is true", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog, mockDog2]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-      mockEnhancedData2,
-    ]);
     vi.mocked(fetchDogImages).mockResolvedValue([mockImageContent, null]);
 
     const handler = getHandler("rescuedogs_search_dogs");
@@ -178,10 +157,6 @@ describe("rescuedogs_search_dogs handler", () => {
 
   it("returns JSON format with count, dogs, and has_more", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog, mockDog2]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-      mockEnhancedData2,
-    ]);
 
     const handler = getHandler("rescuedogs_search_dogs");
     const result = await handler({ response_format: "json" });
@@ -189,15 +164,14 @@ describe("rescuedogs_search_dogs handler", () => {
     const parsed = JSON.parse(result.content[0]!.text!);
     expect(parsed.count).toBe(2);
     expect(parsed.dogs).toHaveLength(2);
-    expect(parsed.dogs[0].enhanced).toBeTruthy();
+    expect(parsed.dogs[0].dog_profiler_data.tagline).toBe(
+      "Your new best friend!"
+    );
     expect(parsed).toHaveProperty("has_more");
   });
 
   it("forwards pagination params to API and formatter", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_search_dogs");
     const result = await handler({ offset: 10, limit: 5 });

@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createMockServer } from "../helpers/mock-server.js";
-import { mockDog, mockEnhancedData, mockImageContent } from "../fixtures/dogs.js";
+import { mockDog, mockImageContent } from "../fixtures/dogs.js";
 
 vi.mock("../../src/services/api-client.js", () => ({
   apiClient: {
     searchDogs: vi.fn(),
-    getBulkEnhancedData: vi.fn(),
   },
 }));
 
@@ -35,9 +34,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it('maps living_situation "apartment" to home_type "apartment_ok"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_match_preferences");
     await handler({ ...baseInput, living_situation: "apartment" });
@@ -49,9 +45,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it('maps living_situation "rural" to home_type "house_required"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_match_preferences");
     await handler({ ...baseInput, living_situation: "rural" });
@@ -63,9 +56,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it('maps activity_level "very_active" to energy_level "very_high"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_match_preferences");
     await handler({ ...baseInput, activity_level: "very_active" });
@@ -77,9 +67,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it('maps experience "first_time" to experience_level "first_time_ok"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_match_preferences");
     await handler({ ...baseInput, experience: "first_time" });
@@ -91,9 +78,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it("passes compatibility params (has_children → good_with_kids)", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_match_preferences");
     await handler({ ...baseInput, has_children: true });
@@ -105,9 +89,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it("returns JSON with matched_criteria including only defined flags", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_match_preferences");
     const result = await handler({
@@ -124,9 +105,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it('returns markdown with "Your Profile" section', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
 
     const handler = getHandler("rescuedogs_match_preferences");
     const result = await handler(baseInput);
@@ -139,7 +117,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it('normalizes adoptable_to_country "GB" to "UK"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([]);
 
     const handler = getHandler("rescuedogs_match_preferences");
     await handler({ ...baseInput, adoptable_to_country: "GB" });
@@ -151,9 +128,6 @@ describe("rescuedogs_match_preferences handler", () => {
 
   it("includes images when include_images is true", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
-    vi.mocked(apiClient.getBulkEnhancedData).mockResolvedValue([
-      mockEnhancedData,
-    ]);
     vi.mocked(fetchDogImages).mockResolvedValue([mockImageContent]);
 
     const handler = getHandler("rescuedogs_match_preferences");

@@ -1,7 +1,8 @@
 import { CHARACTER_LIMIT, DISPLAY_LIMITS } from "../constants.js";
 import type {
+  Compatibility,
   Dog,
-  EnhancedDogData,
+  DogProfilerData,
   Organization,
   BreedStats,
   QualifyingBreed,
@@ -9,33 +10,15 @@ import type {
   FilterCountsResponse,
 } from "../types.js";
 
-// Common interface for profile data (shared between EnhancedDogData and DogProfilerData)
-interface ProfileData {
-  bio?: string | null;
-  enhanced_description?: string | null;
-  description?: string | null;
-  looking_for?: string | null;
-  personality_traits?: string[] | null;
-  interests?: string[] | null;
-  deal_breakers?: string[] | null;
-  fun_fact?: string | null;
-  energy_level?: string | null;
-  home_type?: string | null;
-  experience_level?: string | null;
-}
-
-// Helper function to format shared profile sections
-function formatProfileSections(data: ProfileData, parts: string[]): void {
-  // About/Bio section (bio takes priority, then enhanced_description, then description)
-  const aboutText = data.bio || data.enhanced_description || data.description;
-  if (aboutText) {
+// Formats the AI profiler block that the API returns inline on every animal.
+function formatProfileSections(data: DogProfilerData, parts: string[]): void {
+  if (data.description) {
     parts.push("## About");
     parts.push("");
-    parts.push(aboutText);
+    parts.push(data.description);
     parts.push("");
   }
 
-  // Personality traits
   if (data.personality_traits && data.personality_traits.length > 0) {
     parts.push("## Personality");
     parts.push("");
@@ -43,53 +26,90 @@ function formatProfileSections(data: ProfileData, parts: string[]): void {
     parts.push("");
   }
 
-  // Interests
-  if (data.interests && data.interests.length > 0) {
-    parts.push("## Interests");
+  if (data.favorite_activities && data.favorite_activities.length > 0) {
+    parts.push("## Favourite Activities");
     parts.push("");
-    parts.push(data.interests.map((i) => `- ${i}`).join("\n"));
-    parts.push("");
-  }
-
-  // Looking for (ideal home)
-  if (data.looking_for) {
-    parts.push("## Looking For");
-    parts.push("");
-    parts.push(data.looking_for);
+    parts.push(data.favorite_activities.map((i) => `- ${i}`).join("\n"));
     parts.push("");
   }
 
-  // Requirements
-  if (data.energy_level || data.home_type || data.experience_level) {
+  const requirements: string[] = [];
+  if (data.energy_level) {
+    requirements.push(`- **Energy Level:** ${formatEnumValue(data.energy_level)}`);
+  }
+  if (data.exercise_needs) {
+    requirements.push(`- **Exercise Needs:** ${formatEnumValue(data.exercise_needs)}`);
+  }
+  if (data.home_type) {
+    requirements.push(`- **Home Type:** ${formatEnumValue(data.home_type)}`);
+  }
+  if (data.experience_level) {
+    requirements.push(
+      `- **Experience Needed:** ${formatEnumValue(data.experience_level)}`
+    );
+  }
+  if (data.trainability) {
+    requirements.push(`- **Trainability:** ${formatEnumValue(data.trainability)}`);
+  }
+  if (data.grooming_needs) {
+    requirements.push(`- **Grooming:** ${formatEnumValue(data.grooming_needs)}`);
+  }
+  if (requirements.length > 0) {
     parts.push("## Requirements");
     parts.push("");
-    if (data.energy_level) {
-      parts.push(`- **Energy Level:** ${formatEnumValue(data.energy_level)}`);
-    }
-    if (data.home_type) {
-      parts.push(`- **Home Type:** ${formatEnumValue(data.home_type)}`);
-    }
-    if (data.experience_level) {
-      parts.push(`- **Experience Needed:** ${formatEnumValue(data.experience_level)}`);
-    }
+    parts.push(...requirements);
     parts.push("");
   }
 
-  // Deal breakers
-  if (data.deal_breakers && data.deal_breakers.length > 0) {
+  const compatibility = formatCompatibility(data);
+  if (compatibility.length > 0) {
+    parts.push("## Gets On With");
+    parts.push("");
+    parts.push(...compatibility);
+    parts.push("");
+  }
+
+  // special_needs and medical_needs are semicolon-separated prose, not arrays
+  const notes = [data.special_needs, data.medical_needs].filter(
+    (n): n is string => Boolean(n)
+  );
+  if (notes.length > 0) {
     parts.push("## Important Notes");
     parts.push("");
-    parts.push(data.deal_breakers.map((d) => `- ${d}`).join("\n"));
+    parts.push(
+      notes
+        .flatMap((n) => n.split(";"))
+        .map((n) => n.trim())
+        .filter(Boolean)
+        .map((n) => `- ${n}`)
+        .join("\n")
+    );
     parts.push("");
   }
 
-  // Fun fact
-  if (data.fun_fact) {
+  if (data.unique_quirk) {
     parts.push("## Fun Fact");
     parts.push("");
-    parts.push(data.fun_fact);
+    parts.push(data.unique_quirk);
     parts.push("");
   }
+}
+
+// The API reports compatibility as "yes" | "no" | "unknown". "unknown" is
+// omitted rather than rendered, so the model never reads absence of data as a no.
+function formatCompatibility(data: DogProfilerData): string[] {
+  const label = (v: Compatibility | null | undefined): string | null =>
+    v === "yes" ? "Yes" : v === "no" ? "No" : null;
+
+  return (
+    [
+      ["Children", label(data.good_with_children)],
+      ["Dogs", label(data.good_with_dogs)],
+      ["Cats", label(data.good_with_cats)],
+    ] as const
+  )
+    .filter(([, v]) => v !== null)
+    .map(([name, v]) => `- **${name}:** ${v}`);
 }
 
 export function truncateIfNeeded(text: string): string {
@@ -100,19 +120,17 @@ export function truncateIfNeeded(text: string): string {
   return `${truncated}\n\n... (truncated due to length limit)`;
 }
 
-export function formatDogMarkdown(
-  dog: Dog,
-  enhanced?: EnhancedDogData | null
-): string {
+export function formatDogMarkdown(dog: Dog): string {
   const parts: string[] = [];
+  const profile = dog.dog_profiler_data;
 
   // Header with name
   parts.push(`# ${dog.name}`);
   parts.push("");
 
   // Tagline if available
-  if (enhanced?.tagline) {
-    parts.push(`*${enhanced.tagline}*`);
+  if (profile?.tagline) {
+    parts.push(`*${profile.tagline}*`);
     parts.push("");
   }
 
@@ -136,11 +154,8 @@ export function formatDogMarkdown(
   }
   parts.push("");
 
-  // Format profile sections from enhanced data or fallback to dog_profiler_data
-  if (enhanced) {
-    formatProfileSections(enhanced, parts);
-  } else if (dog.dog_profiler_data) {
-    formatProfileSections(dog.dog_profiler_data, parts);
+  if (profile) {
+    formatProfileSections(profile, parts);
   }
 
   // Organization info
@@ -169,7 +184,6 @@ export function formatDogMarkdown(
 
 export function formatDogsListMarkdown(
   dogs: Dog[],
-  enhancedData?: Map<number, EnhancedDogData>,
   pagination?: { offset: number; limit: number }
 ): string {
   if (dogs.length === 0) {
@@ -190,11 +204,9 @@ No dogs found matching your criteria.
   parts.push("");
 
   for (const dog of dogs) {
-    const enhanced = enhancedData?.get(dog.id);
-
     parts.push(`## ${dog.name}`);
-    if (enhanced?.tagline) {
-      parts.push(`*${enhanced.tagline}*`);
+    if (dog.dog_profiler_data?.tagline) {
+      parts.push(`*${dog.dog_profiler_data.tagline}*`);
     }
     parts.push("");
 

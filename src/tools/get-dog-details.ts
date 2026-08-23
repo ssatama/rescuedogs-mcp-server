@@ -3,7 +3,7 @@ import { apiClient } from "../services/api-client.js";
 import { formatDogMarkdown } from "../services/formatters.js";
 import { fetchDogImage } from "../services/image-service.js";
 import { GetDogDetailsInputSchema } from "../schemas/index.js";
-import type { EnhancedDogData, ImagePreset } from "../types.js";
+import type { ImagePreset } from "../types.js";
 
 export function registerGetDogDetailsTool(server: McpServer): void {
   server.tool(
@@ -16,23 +16,12 @@ export function registerGetDogDetailsTool(server: McpServer): void {
 
         const dog = await apiClient.getDogBySlug(parsed.slug);
 
-        // Fetch enhanced data
-        let enhanced: EnhancedDogData | null = null;
-        try {
-          enhanced = await apiClient.getEnhancedDogData(dog.id);
-        } catch (error) {
-          console.error(
-            "Enhanced data fetch failed:",
-            error instanceof Error ? error.message : error
-          );
-        }
-
         if (parsed.response_format === "json") {
           return {
             content: [
               {
                 type: "text" as const,
-                text: JSON.stringify({ ...dog, enhanced }, null, 2),
+                text: JSON.stringify(dog, null, 2),
               },
             ],
           };
@@ -58,7 +47,7 @@ export function registerGetDogDetailsTool(server: McpServer): void {
         // Add text content
         content.push({
           type: "text" as const,
-          text: formatDogMarkdown(dog, enhanced),
+          text: formatDogMarkdown(dog),
         });
 
         return { content };
