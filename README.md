@@ -11,15 +11,27 @@
 
 MCP server for discovering rescue dogs from European and UK organizations. Search, filter, and get detailed profiles of dogs available for adoption.
 
-## Installation
+## Connect
+
+### Remote (recommended)
+
+No install. Add the endpoint as a custom connector or remote MCP server:
+
+```
+https://mcp.rescuedogs.me/mcp
+```
+
+It speaks MCP streamable HTTP, needs no authentication, and is read-only.
+
+### Local (npm, stdio)
 
 ```bash
 npm install -g rescuedogs-mcp-server
 ```
 
-## Claude Desktop Configuration
-
-Add to `~/.config/claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+Then add it to your client's MCP config. For Claude Desktop that is
+`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or
+`%APPDATA%\Claude\claude_desktop_config.json` on Windows:
 
 ```json
 {
@@ -55,7 +67,12 @@ Search for rescue dogs with comprehensive filtering.
 - `experience_level` - first_time_ok, some_experience, experienced_only
 - `home_type` - apartment_ok, house_preferred, house_required
 - `adoptable_to_country` - ISO country code (GB, IE, FR, DE)
-- `include_images` - Include dog photos (default: false)
+- `organization_id` - Restrict to one rescue (see `rescuedogs_list_organizations`)
+- `good_with_kids`, `good_with_dogs`, `good_with_cats` - boolean
+- `limit` (1-50, default 10), `offset` - pagination
+- `include_images` - Include dog photos (default: false, max 5 dogs)
+- `image_preset` - `thumbnail` (200x200) or `medium` (400x400)
+- `response_format` - `markdown` (default) or `json`
 
 ### rescuedogs_get_dog_details
 
@@ -69,6 +86,8 @@ Get full details for a specific dog including AI-generated personality profile.
 **Parameters:**
 - `slug` - Dog's URL slug (required)
 - `include_image` - Include photo (default: true)
+- `image_preset` - `thumbnail` or `medium` (default)
+- `response_format` - `markdown` (default) or `json`
 
 ### rescuedogs_list_breeds
 
@@ -82,7 +101,8 @@ Get available breeds with counts and statistics.
 **Parameters:**
 - `breed_group` - Filter by FCI group
 - `min_count` - Minimum dogs available
-- `limit` - Number of breeds to return
+- `limit` - Number of breeds to return (1-100, default 20)
+- `response_format` - `markdown` (default) or `json`
 
 ### rescuedogs_get_statistics
 
@@ -93,6 +113,9 @@ Get overall platform statistics.
 "Show me platform statistics"
 ```
 
+**Parameters:**
+- `response_format` - `markdown` (default) or `json`
+
 ### rescuedogs_get_filter_counts
 
 Get available filter options with counts based on current filters.
@@ -102,6 +125,11 @@ Get available filter options with counts based on current filters.
 "Show me available sizes for dogs in Spain"
 ```
 
+**Parameters:**
+- `current_filters` - Object with any of `breed`, `size`, `age_category`, `sex`,
+  `adoptable_to_country`
+- `response_format` - `markdown` (default) or `json`
+
 ### rescuedogs_list_organizations
 
 List rescue organizations with their statistics.
@@ -110,6 +138,12 @@ List rescue organizations with their statistics.
 "Which rescue organizations are in the UK?"
 "Show me all organizations"
 ```
+
+**Parameters:**
+- `country` - Filter by ISO country code
+- `active_only` - Only active organizations (default: true)
+- `limit` - Number to return (1-50, default 20)
+- `response_format` - `markdown` (default) or `json`
 
 ### rescuedogs_match_preferences
 
@@ -124,8 +158,12 @@ Find dogs matching your lifestyle preferences.
 - `living_situation` - apartment, house_small_garden, house_large_garden, rural
 - `activity_level` - sedentary, moderate, active, very_active
 - `experience` - first_time, some, experienced
-- `has_children`, `has_other_dogs`, `has_cats` - boolean
+- `has_children`, `has_other_dogs`, `has_cats` - boolean. Set to filter; omit to
+  not filter on it at all
 - `adoptable_to_country` - ISO country code
+- `limit` - Number of matches (1-20, default 5)
+- `include_images` - Include dog photos (default: false)
+- `response_format` - `markdown` (default) or `json`
 
 ### rescuedogs_get_adoption_guide
 
@@ -143,21 +181,15 @@ Get information about the rescue dog adoption process.
 
 ## Geographic Scope
 
-This server covers **European and UK rescue organizations only**:
+Dogs are listed by European and UK rescue organizations. They are currently
+located in the UK, Germany, Serbia, Bulgaria, Bosnia, Turkey and Cyprus, and
+most rescues ship across the EU, EEA and UK.
 
-- United Kingdom
-- Ireland
-- Germany
-- France
-- Spain
-- Italy
-- Romania
-- Greece
-- Bulgaria
-- Cyprus
-- And more...
+US, Canadian and Australian rescues are not covered.
 
-US, Canadian, and Australian rescues are not supported.
+Use `rescuedogs_list_organizations` to see where each rescue ships, and
+`rescuedogs_get_filter_counts` for the live list of destination countries -
+coverage changes as organizations are added.
 
 ## Country Codes
 
@@ -183,20 +215,73 @@ Dogs can be adopted to countries where the rescue organization ships to. Use `re
 
 ## Data Source
 
-All data comes from [rescuedogs.me](https://www.rescuedogs.me), aggregating listings from vetted rescue organizations.
+All data comes from [rescuedogs.me](https://www.rescuedogs.me), which aggregates
+listings from independent rescue organizations. At the time of writing that is
+roughly 1,400 available dogs across 96 breeds from 11 organizations; call
+`rescuedogs_get_statistics` for current figures. About 99% of dogs carry an
+AI-generated personality profile.
 
-- 1,500+ available dogs
-- 12+ rescue organizations
-- 370+ breeds
-- 96% AI personality profile coverage
+The platform is powered by the open-source
+[rescue-dog-aggregator](https://github.com/ssatama/rescue-dog-aggregator)
+project, which handles collection, breed standardization, AI personality
+extraction, and the public API.
 
-The platform is powered by the open-source [rescue-dog-aggregator](https://github.com/ssatama/rescue-dog-aggregator) project, which handles web scraping, data standardization, AI-powered personality extraction, and the public API.
+### How the data is gathered, and how to be removed
+
+Listings are collected from the public adoption pages of each rescue
+organization. Nothing behind a login, paywall or `robots.txt` restriction is
+collected, and no personal data about adopters or staff is stored.
+
+Every result links to the rescue's own adoption page. This project sends people
+to the rescues; it does not take applications, take payment, or stand between an
+adopter and an organization.
+
+If you run one of these organizations and want your listings removed, changed,
+or credited differently, open an issue on
+[rescue-dog-aggregator](https://github.com/ssatama/rescue-dog-aggregator/issues)
+or contact the maintainer. Removal requests are honoured, and no justification
+is required.
+
+## Transports
+
+| Transport | Entrypoint | Used by |
+|-----------|-----------|---------|
+| stdio | `dist/index.js` (`npm start`) | Local clients, the npm package, Smithery |
+| Streamable HTTP | `dist/http.js` (`npm run start:http`) | The remote endpoint at `/mcp` |
+
+The HTTP transport is stateless: every request gets its own server instance, so
+there are no sessions to expire and it scales horizontally without shared state.
+SSE is not implemented - it is deprecated in the MCP SDK, and the current spec
+revision defines only stdio and streamable HTTP.
+
+The public endpoint is rate limited per IP, 20 requests/minute and
+300 requests/hour. `/health` is exempt.
+
+Run it locally:
+
+```bash
+npm run dev:http          # tsx, no build step
+# or
+npm run build && npm run start:http
+```
+
+Then point the [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector)
+at `http://localhost:3000/mcp` with transport "Streamable HTTP".
 
 ## Docker
+
+The stdio image installs the published npm package:
 
 ```bash
 docker build -t rescuedogs-mcp .
 docker run -i rescuedogs-mcp
+```
+
+The remote endpoint builds from source:
+
+```bash
+docker build -f Dockerfile.http -t rescuedogs-mcp-http .
+docker run -p 3000:3000 rescuedogs-mcp-http
 ```
 
 ## Environment Variables
@@ -205,13 +290,19 @@ docker run -i rescuedogs-mcp
 |----------|-------------|---------|
 | `RESCUEDOGS_API_URL` | Base URL for the rescuedogs API | `https://api.rescuedogs.me` |
 | `RESCUEDOGS_IMAGE_URL` | Base URL for the image CDN | `https://images.rescuedogs.me` |
+| `PORT` | Port for the HTTP transport | `3000` |
+| `HOST` | Bind address for the HTTP transport | `0.0.0.0` |
+| `OPENAI_APPS_CHALLENGE` | Token served at `/.well-known/openai-apps-challenge` for OpenAI domain verification | unset (route returns 404) |
 
 ## Architecture
 
 ```
 src/
-├── index.ts              # Entry point — server setup and stdio transport
-├── constants.ts          # Shared constants (API URLs, cache TTLs, display limits)
+├── index.ts              # Entry point — stdio transport
+├── http.ts               # Entry point — streamable HTTP transport
+├── http-app.ts           # Express app: /mcp, /health, rate limiting
+├── server.ts             # Shared MCP server factory used by both entrypoints
+├── constants.ts          # Shared constants (API URLs, cache TTLs, rate limits)
 ├── types.ts              # TypeScript type definitions for API responses
 ├── schemas/
 │   └── index.ts          # Zod input schemas for all tools
@@ -219,7 +310,8 @@ src/
 │   ├── api-client.ts     # Axios-based API client with retry logic
 │   ├── cache-service.ts  # In-memory cache with TTL support
 │   ├── formatters.ts     # Markdown formatters for API responses
-│   └── image-service.ts  # Image fetching and CDN transform URLs
+│   ├── image-service.ts  # Image fetching and CDN transform URLs
+│   └── projection.ts     # Allowlisted public shapes for JSON responses
 ├── tools/
 │   ├── index.ts          # Tool registration barrel with logging wrapper
 │   ├── search-dogs.ts    # rescuedogs_search_dogs handler
@@ -280,6 +372,12 @@ outage cannot block an unrelated PR.
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and PRs welcome!
+
+## Privacy and Terms
+
+- [Privacy policy](PRIVACY.md) - the short version: no personal data is
+  collected, and tool inputs are search filters, not profiles.
+- [Terms of use](TERMS.md)
 
 ## License
 
