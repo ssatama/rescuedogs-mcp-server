@@ -26,7 +26,11 @@ export function registerSearchDogsTool(server: McpServer): void {
           ? AGE_CATEGORY_MAP[parsed.age_category]
           : undefined;
 
-        // Check if query matches an organization name
+        // A query that is exactly an organization's name is a request for that
+        // organization's dogs, so swap it for an organization_id filter. The
+        // match must be exact: substring matching treated a dog named "Daisy"
+        // as a request for "Daisy Family Rescue e.V.", returning that org's
+        // whole roster and hiding every actual Daisy.
         let organizationId = parsed.organization_id;
         let searchQuery = parsed.query;
 
@@ -37,11 +41,11 @@ export function registerSearchDogsTool(server: McpServer): void {
             cacheService.setOrganizations(orgs);
           }
 
-          const queryLower = searchQuery.toLowerCase();
+          const normalize = (value: string): string =>
+            value.trim().toLowerCase().replace(/\s+/g, " ");
+          const normalizedQuery = normalize(searchQuery);
           const matchedOrg = orgs.find(
-            (o) =>
-              o.name.toLowerCase().includes(queryLower) ||
-              queryLower.includes(o.name.toLowerCase())
+            (o) => normalize(o.name) === normalizedQuery
           );
 
           if (matchedOrg) {

@@ -74,20 +74,65 @@ describe("rescuedogs_search_dogs handler", () => {
     );
   });
 
-  it("matches org name from cache and converts to organization_id", async () => {
+  it("matches a full org name from cache and adds organization_id", async () => {
     vi.mocked(cacheService.getOrganizations).mockReturnValue([
       mockOrganization,
     ]);
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
 
     const handler = getHandler("rescuedogs_search_dogs");
-    await handler({ query: "Happy Paws" });
+    await handler({ query: "Happy Paws Rescue" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ organization_id: 1 })
+    );
+  });
+
+  it("matches an org name case- and whitespace-insensitively", async () => {
+    vi.mocked(cacheService.getOrganizations).mockReturnValue([
+      mockOrganization,
+    ]);
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ query: "  happy paws rescue " });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ organization_id: 1 })
+    );
+  });
+
+  // Regression: "Daisy" used to substring-match "Daisy Family Rescue e.V.",
+  // drop the query, and return that org's whole roster instead of dogs named Daisy.
+  it("does not treat a dog name that appears inside an org name as an org filter", async () => {
+    vi.mocked(cacheService.getOrganizations).mockReturnValue([
+      { ...mockOrganization, id: 12, name: "Daisy Family Rescue e.V." },
+    ]);
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ query: "Daisy" });
 
     expect(apiClient.searchDogs).toHaveBeenCalledWith(
       expect.objectContaining({
-        organization_id: 1,
-        search: undefined,
+        search: "Daisy",
+        organization_id: undefined,
       })
+    );
+  });
+
+  it("drops the free-text query once it has resolved to an org", async () => {
+    vi.mocked(cacheService.getOrganizations).mockReturnValue([
+      mockOrganization,
+    ]);
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ query: "Happy Paws Rescue" });
+
+    // Searching dog names for the org's name would match nothing
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ search: undefined, organization_id: 1 })
     );
   });
 
@@ -99,7 +144,7 @@ describe("rescuedogs_search_dogs handler", () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
 
     const handler = getHandler("rescuedogs_search_dogs");
-    await handler({ query: "Happy Paws" });
+    await handler({ query: "Happy Paws Rescue" });
 
     expect(apiClient.getOrganizations).toHaveBeenCalledWith({
       active_only: true,
