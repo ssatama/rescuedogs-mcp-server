@@ -18,11 +18,11 @@ type ToolHandler = (...args: unknown[]) => Promise<ToolResult>;
 export function wrapWithLogging(server: McpServer): McpServer {
   const originalRegisterTool = server.registerTool.bind(server) as (
     ...args: unknown[]
-  ) => void;
+  ) => unknown;
 
   (server as unknown as {
-    registerTool: (...args: unknown[]) => void;
-  }).registerTool = (...args: unknown[]): void => {
+    registerTool: (...args: unknown[]) => unknown;
+  }).registerTool = (...args: unknown[]): unknown => {
     // registerTool(name, config, handler) - the handler is the last argument
     const handler = args[args.length - 1] as ToolHandler;
     const toolName = args[0] as string;
@@ -43,7 +43,9 @@ export function wrapWithLogging(server: McpServer): McpServer {
     };
 
     args[args.length - 1] = wrappedHandler;
-    originalRegisterTool(...args);
+    // registerTool returns a RegisteredTool used for update/enable/disable;
+    // dropping it would make server.registerTool(...).disable() throw.
+    return originalRegisterTool(...args);
   };
 
   return server;

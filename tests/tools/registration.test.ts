@@ -40,14 +40,31 @@ describe("tool registration metadata", () => {
     expect(mock.getConfig(name).description?.length ?? 0).toBeGreaterThan(20);
   });
 
-  it.each(EXPECTED)("%s is annotated as a safe read-only tool", (name) => {
+  it.each(EXPECTED)("%s is annotated read-only and non-destructive", (name) => {
     // Every handler is a GET against the public catalogue or a static lookup.
     expect(mock.getConfig(name).annotations).toMatchObject({
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: false,
     });
+  });
+
+  // Per the MCP spec, openWorldHint is about the domain of interaction, not
+  // about mutation: "the world of a web search tool is open, whereas that of
+  // a memory tool is not". It defaults to true, so declaring false is an
+  // active claim that the domain is closed.
+  const CLOSED_WORLD = ["rescuedogs_get_adoption_guide"];
+
+  it.each(EXPECTED)("%s declares its world accurately", (name) => {
+    const expected = !CLOSED_WORLD.includes(name);
+    expect(mock.getConfig(name).annotations?.openWorldHint).toBe(expected);
+  });
+
+  it("only the static guide tool claims a closed world", () => {
+    const closed = EXPECTED.filter(
+      (n) => mock.getConfig(n).annotations?.openWorldHint === false
+    );
+    expect(closed).toEqual(CLOSED_WORLD);
   });
 
   it.each(EXPECTED)("%s declares an input schema object", (name) => {

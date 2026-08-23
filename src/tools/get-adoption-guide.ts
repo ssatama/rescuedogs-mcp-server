@@ -16,6 +16,7 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
+        // Static guide content bundled with the server, no external calls.
         openWorldHint: false,
       },
     },

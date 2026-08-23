@@ -27,6 +27,8 @@ export function createMockServer() {
     registerTool: vi.fn(
       (name: string, config: ToolConfig, handler: ToolHandler) => {
         tools.set(name, { name, config, handler });
+        // Mirror the real signature, which returns a RegisteredTool.
+        return { update: vi.fn(), enable: vi.fn(), disable: vi.fn(), remove: vi.fn() };
       }
     ),
   } as unknown as McpServer;
