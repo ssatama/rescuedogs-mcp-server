@@ -27,3 +27,11 @@ export const DISPLAY_LIMITS = {
   MAX_FILTER_COUNTRIES: 15,
   MAX_FILTER_BREEDS: 10,
 } as const;
+
+// Guards a public, unauthenticated endpoint that fronts the rescuedogs API.
+export const RATE_LIMITS = {
+  BURST: 20,
+  BURST_WINDOW_MS: 60 * 1000,
+  SUSTAINED: 300,
+  SUSTAINED_WINDOW_MS: 60 * 60 * 1000,
+} as const;
