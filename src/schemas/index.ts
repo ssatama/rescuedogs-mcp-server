@@ -1,21 +1,21 @@
 import { z } from "zod";
 
-export const SizeEnum = z.enum(["Tiny", "Small", "Medium", "Large", "XLarge"]);
-export const AgeCategoryEnum = z.enum(["puppy", "young", "adult", "senior"]);
-export const SexEnum = z.enum(["male", "female"]);
-export const EnergyLevelEnum = z.enum(["low", "medium", "high", "very_high"]);
-export const ExperienceLevelEnum = z.enum([
+const SizeEnum = z.enum(["Tiny", "Small", "Medium", "Large", "XLarge"]);
+const AgeCategoryEnum = z.enum(["puppy", "young", "adult", "senior"]);
+const SexEnum = z.enum(["male", "female"]);
+const EnergyLevelEnum = z.enum(["low", "medium", "high", "very_high"]);
+const ExperienceLevelEnum = z.enum([
   "first_time_ok",
   "some_experience",
   "experienced_only",
 ]);
-export const HomeTypeEnum = z.enum([
+const HomeTypeEnum = z.enum([
   "apartment_ok",
   "house_preferred",
   "house_required",
 ]);
-export const ResponseFormatEnum = z.enum(["markdown", "json"]);
-export const ImagePresetEnum = z.enum(["thumbnail", "medium"]);
+const ResponseFormatEnum = z.enum(["markdown", "json"]);
+const ImagePresetEnum = z.enum(["thumbnail", "medium"]);
 
 export const SearchDogsInputSchema = z
   .object({
@@ -186,19 +186,19 @@ export const ListOrganizationsInputSchema = z
   })
   .strict();
 
-export const LivingSituationEnum = z.enum([
+const LivingSituationEnum = z.enum([
   "apartment",
   "house_small_garden",
   "house_large_garden",
   "rural",
 ]);
-export const ActivityLevelEnum = z.enum([
+const ActivityLevelEnum = z.enum([
   "sedentary",
   "moderate",
   "active",
   "very_active",
 ]);
-export const ExperienceEnum = z.enum(["first_time", "some", "experienced"]);
+const ExperienceEnum = z.enum(["first_time", "some", "experienced"]);
 
 export const MatchPreferencesInputSchema = z
   .object({
@@ -242,7 +242,7 @@ export const MatchPreferencesInputSchema = z
   })
   .strict();
 
-export const AdoptionGuideTopicEnum = z.enum([
+const AdoptionGuideTopicEnum = z.enum([
   "overview",
   "transport",
   "fees",
@@ -261,13 +261,3 @@ export const GetAdoptionGuideInputSchema = z
       .describe("ISO country code for country-specific adoption info"),
   })
   .strict();
-
-// Type inference helpers
-export type SearchDogsInput = z.infer<typeof SearchDogsInputSchema>;
-export type GetDogDetailsInput = z.infer<typeof GetDogDetailsInputSchema>;
-export type ListBreedsInput = z.infer<typeof ListBreedsInputSchema>;
-export type GetStatisticsInput = z.infer<typeof GetStatisticsInputSchema>;
-export type GetFilterCountsInput = z.infer<typeof GetFilterCountsInputSchema>;
-export type ListOrganizationsInput = z.infer<typeof ListOrganizationsInputSchema>;
-export type MatchPreferencesInput = z.infer<typeof MatchPreferencesInputSchema>;
-export type GetAdoptionGuideInput = z.infer<typeof GetAdoptionGuideInputSchema>;

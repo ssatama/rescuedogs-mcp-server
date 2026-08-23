@@ -17,6 +17,7 @@ import {
   mockStatistics,
   mockFilterCounts,
 } from "../fixtures/dogs.js";
+import type { FilterCountsResponse } from "../../src/types.js";
 
 describe("truncateIfNeeded", () => {
   it("returns short text unchanged", () => {

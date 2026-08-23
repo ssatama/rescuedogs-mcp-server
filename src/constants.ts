@@ -19,15 +19,6 @@ export const IMAGE_TRANSFORMS = {
 export const IMAGE_BASE_URL =
   process.env.RESCUEDOGS_IMAGE_URL || "https://images.rescuedogs.me";
 
-export const DEFAULT_LIMIT = 10;
-export const MAX_LIMIT = 50;
-export const MIN_LIMIT = 1;
-
-export const PAGINATION_DEFAULTS = {
-  limit: DEFAULT_LIMIT,
-  offset: 0,
-} as const;
-
 export const DISPLAY_LIMITS = {
   MAX_IMAGES: 5,
   MAX_BREED_TRAITS: 3,

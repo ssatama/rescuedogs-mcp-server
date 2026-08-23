@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // vitest globals trip these; they stay enabled for src/ via tsconfig.json
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noEmit": true,
+    // rootDir is src/ for the build; widen it so tests/ can join the program
+    "rootDir": "."
+  },
+  // The base config excludes tests/ so `npm run build` does not compile them.
+  // That exclude is inherited through `extends`, and would filter out the
+  // include below, so it has to be reset here.
+  "exclude": ["node_modules", "dist"],
+  "include": ["src/**/*", "tests/**/*"]
+}
