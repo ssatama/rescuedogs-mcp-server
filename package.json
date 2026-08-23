@@ -16,6 +16,7 @@
     "lint:fix": "eslint src/ --fix",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:contract": "vitest run --config vitest.contract.config.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
