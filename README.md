@@ -248,8 +248,14 @@ npm test
 # Run tests with coverage
 npm run test:coverage
 
-# Type check
+# Contract tests against the live API (excluded from `npm test`)
+npm run test:contract
+
+# Type check src
 npm run typecheck
+
+# Type check tests as well
+npm run typecheck:tests
 
 # Lint
 npm run lint
@@ -257,12 +263,19 @@ npm run lint
 # Lint with auto-fix
 npm run lint:fix
 
+# Report unused exports, files and dependencies
+npm run lint:dead
+
 # Build
 npm run build
 
 # Development mode (tsx)
 npm run dev
 ```
+
+CI runs `lint`, `typecheck`, `typecheck:tests`, `lint:dead`, `test` and `build` on
+every pull request. `test:contract` runs on a schedule instead, so an upstream API
+outage cannot block an unrelated PR.
 
 ## Contributing
 
