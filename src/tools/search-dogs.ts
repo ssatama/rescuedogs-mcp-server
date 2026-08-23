@@ -31,10 +31,19 @@ function orgNameAliases(name: string): string[] {
 }
 
 export function registerSearchDogsTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "rescuedogs_search_dogs",
-    "Search for rescue dogs available for adoption from European and UK organizations. Returns matching dogs with basic info. Use rescuedogs_get_dog_details for full profiles.",
-    SearchDogsInputSchema.shape,
+    {
+      title: "Search rescue dogs",
+      description: "Search for rescue dogs available for adoption from European and UK organizations. Returns matching dogs with basic info. Use rescuedogs_get_dog_details for full profiles.",
+      inputSchema: SearchDogsInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
     async (input) => {
       try {
         const parsed = SearchDogsInputSchema.parse(input);

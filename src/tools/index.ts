@@ -16,12 +16,14 @@ type ToolResult = {
 type ToolHandler = (...args: unknown[]) => Promise<ToolResult>;
 
 export function wrapWithLogging(server: McpServer): McpServer {
-  const originalTool = server.tool.bind(server) as (...args: unknown[]) => void;
-
-  (server as unknown as { tool: (...args: unknown[]) => void }).tool = (
+  const originalRegisterTool = server.registerTool.bind(server) as (
     ...args: unknown[]
-  ): void => {
-    // server.tool has multiple overloads; the handler is always the last argument
+  ) => unknown;
+
+  (server as unknown as {
+    registerTool: (...args: unknown[]) => unknown;
+  }).registerTool = (...args: unknown[]): unknown => {
+    // registerTool(name, config, handler) - the handler is the last argument
     const handler = args[args.length - 1] as ToolHandler;
     const toolName = args[0] as string;
 
@@ -41,7 +43,9 @@ export function wrapWithLogging(server: McpServer): McpServer {
     };
 
     args[args.length - 1] = wrappedHandler;
-    originalTool(...args);
+    // registerTool returns a RegisteredTool used for update/enable/disable;
+    // dropping it would make server.registerTool(...).disable() throw.
+    return originalRegisterTool(...args);
   };
 
   return server;

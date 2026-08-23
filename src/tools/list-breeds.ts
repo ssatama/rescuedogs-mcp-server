@@ -5,10 +5,19 @@ import { formatBreedStatsMarkdown } from "../services/formatters.js";
 import { ListBreedsInputSchema } from "../schemas/index.js";
 
 export function registerListBreedsTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "rescuedogs_list_breeds",
-    "Get available breeds with counts and statistics. Shows which breeds have dogs available for adoption.",
-    ListBreedsInputSchema.shape,
+    {
+      title: "List available breeds",
+      description: "Get available breeds with counts and statistics. Shows which breeds have dogs available for adoption.",
+      inputSchema: ListBreedsInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
     async (input) => {
       try {
         const parsed = ListBreedsInputSchema.parse(input);

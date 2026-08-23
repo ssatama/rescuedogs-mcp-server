@@ -12,10 +12,19 @@ import {
 import { DISPLAY_LIMITS } from "../constants.js";
 
 export function registerMatchPreferencesTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "rescuedogs_match_preferences",
-    "Find dogs that match your lifestyle preferences. Translates your living situation, activity level, and experience into appropriate filters.",
-    MatchPreferencesInputSchema.shape,
+    {
+      title: "Match dogs to lifestyle",
+      description: "Find dogs that match your lifestyle preferences. Translates your living situation, activity level, and experience into appropriate filters.",
+      inputSchema: MatchPreferencesInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
     async (input) => {
       try {
         const parsed = MatchPreferencesInputSchema.parse(input);

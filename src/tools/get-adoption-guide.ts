@@ -6,10 +6,20 @@ import {
 } from "../data/adoption-guides.js";
 
 export function registerGetAdoptionGuideTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "rescuedogs_get_adoption_guide",
-    "Get information about the rescue dog adoption process including transport, fees, requirements, and timeline.",
-    GetAdoptionGuideInputSchema.shape,
+    {
+      title: "Get adoption guide",
+      description: "Get information about the rescue dog adoption process including transport, fees, requirements, and timeline.",
+      inputSchema: GetAdoptionGuideInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        // Static guide content bundled with the server, no external calls.
+        openWorldHint: false,
+      },
+    },
     async (input) => {
       try {
         const parsed = GetAdoptionGuideInputSchema.parse(input);

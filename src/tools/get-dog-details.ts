@@ -6,10 +6,19 @@ import { GetDogDetailsInputSchema } from "../schemas/index.js";
 import type { ImagePreset } from "../types.js";
 
 export function registerGetDogDetailsTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "rescuedogs_get_dog_details",
-    "Get full details for a specific rescue dog including AI-generated personality profile, requirements, and adoption info.",
-    GetDogDetailsInputSchema.shape,
+    {
+      title: "Get dog details",
+      description: "Get full details for a specific rescue dog including AI-generated personality profile, requirements, and adoption info.",
+      inputSchema: GetDogDetailsInputSchema.shape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
     async (input) => {
       try {
         const parsed = GetDogDetailsInputSchema.parse(input);
