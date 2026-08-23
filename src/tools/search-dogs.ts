@@ -3,6 +3,7 @@ import { apiClient } from "../services/api-client.js";
 import { cacheService } from "../services/cache-service.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
+import { toPublicDog } from "../services/projection.js";
 import { SearchDogsInputSchema } from "../schemas/index.js";
 import type { ImagePreset, Organization } from "../types.js";
 import {
@@ -108,7 +109,7 @@ export function registerSearchDogsTool(server: McpServer): void {
                 text: JSON.stringify(
                   {
                     count: dogs.length,
-                    dogs,
+                    dogs: dogs.map(toPublicDog),
                     has_more: dogs.length === parsed.limit,
                   },
                   null,

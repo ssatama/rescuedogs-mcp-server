@@ -241,9 +241,8 @@ describe("rescuedogs_search_dogs handler", () => {
     const parsed = JSON.parse(result.content[0]!.text!);
     expect(parsed.count).toBe(2);
     expect(parsed.dogs).toHaveLength(2);
-    expect(parsed.dogs[0].dog_profiler_data.tagline).toBe(
-      "Your new best friend!"
-    );
+    expect(parsed.dogs[0].profile.tagline).toBe("Your new best friend!");
+    expect(parsed.dogs[0]).not.toHaveProperty("last_scraped_at");
     expect(parsed).toHaveProperty("has_more");
   });
 

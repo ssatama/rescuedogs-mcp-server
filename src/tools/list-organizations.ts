@@ -4,6 +4,7 @@ import { cacheService } from "../services/cache-service.js";
 import { formatOrganizationsListMarkdown } from "../services/formatters.js";
 import { ListOrganizationsInputSchema } from "../schemas/index.js";
 import { normalizeCountryForApi } from "../utils/mappings.js";
+import { toPublicOrganization } from "../services/projection.js";
 
 export function registerListOrganizationsTool(server: McpServer): void {
   server.registerTool(
@@ -47,7 +48,7 @@ export function registerListOrganizationsTool(server: McpServer): void {
             content: [
               {
                 type: "text" as const,
-                text: JSON.stringify(orgs, null, 2),
+                text: JSON.stringify(orgs.map(toPublicOrganization), null, 2),
               },
             ],
           };
