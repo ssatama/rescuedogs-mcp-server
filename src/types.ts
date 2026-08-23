@@ -72,12 +72,12 @@ export interface Organization {
   updated_at: string;
 }
 
-export interface ServiceRegion {
+interface ServiceRegion {
   country: string;
   region: string;
 }
 
-export interface AdoptionFees {
+interface AdoptionFees {
   currency: string;
   amount: number;
   notes: string;
@@ -92,7 +92,7 @@ export interface BreedStats {
   qualifying_breeds: QualifyingBreed[];
 }
 
-export interface BreedGroupCount {
+interface BreedGroupCount {
   name: string;
   count: number;
 }
@@ -114,14 +114,14 @@ export interface QualifyingBreed {
   personality_metrics: PersonalityMetrics;
 }
 
-export interface AgeDistribution {
+interface AgeDistribution {
   puppy: number;
   young: number;
   adult: number;
   senior: number;
 }
 
-export interface SizeDistribution {
+interface SizeDistribution {
   tiny: number;
   small: number;
   medium: number;
@@ -129,35 +129,35 @@ export interface SizeDistribution {
   xlarge: number;
 }
 
-export interface SexDistribution {
+interface SexDistribution {
   male: number;
   female: number;
 }
 
-export interface ExperienceDistribution {
+interface ExperienceDistribution {
   first_time_ok: number;
   some_experience: number;
   experienced: number;
 }
 
-export interface PersonalityMetrics {
+interface PersonalityMetrics {
   energy_level: MetricValue;
   affection: MetricValue;
   trainability: MetricValue;
   independence: MetricValue;
 }
 
-export interface MetricValue {
+interface MetricValue {
   percentage: number;
   label: string;
 }
 
-export interface CountryStats {
+interface CountryStats {
   country: string;
   count: number;
 }
 
-export interface OrganizationStats {
+interface OrganizationStats {
   id: number;
   name: string;
   slug: string;
@@ -180,7 +180,7 @@ export interface Statistics {
   organizations: OrganizationStats[];
 }
 
-export interface FilterOption {
+interface FilterOption {
   value: string;
   label: string;
   count: number;
@@ -198,9 +198,9 @@ export interface FilterCountsResponse {
 }
 
 // Enum types for profiler data
-export type EnergyLevel = "low" | "medium" | "high" | "very_high";
-export type HomeType = "apartment_ok" | "house_preferred" | "house_required";
-export type ExperienceLevel =
+type EnergyLevel = "low" | "medium" | "high" | "very_high";
+type HomeType = "apartment_ok" | "house_preferred" | "house_required";
+type ExperienceLevel =
   | "first_time_ok"
   | "some_experience"
   | "experienced_only";
@@ -213,14 +213,6 @@ export type Compatibility =
   | "unknown"
   | "older_children"
   | "selective";
-
-// API Response wrappers
-export interface PaginatedResponse<T> {
-  data: T[];
-  has_more: boolean;
-  total?: number;
-  next_offset?: number;
-}
 
 export interface ApiError {
   detail: string;

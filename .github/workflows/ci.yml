@@ -32,6 +32,12 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      - name: Type check tests
+        run: npm run typecheck:tests
+
+      - name: Dead code
+        run: npm run lint:dead
+
       - name: Test
         run: npm test
 
