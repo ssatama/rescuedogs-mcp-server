@@ -19,11 +19,15 @@ in production are fixed.
   the handle every tool accepts), and scraper and LLM bookkeeping fields
   (`last_scraped_at`, `consecutive_scrapes_missing`, `adoption_check_data`,
   `model_used`, `prompt_version`, `processing_time_ms`, `confidence_scores`)
-  are no longer emitted. Payloads are about 80% smaller. Markdown output is
-  unaffected.
+  are no longer emitted. Payloads are about 80% smaller. This projection does
+  not change markdown output, though other entries below do.
 - **`rescuedogs_search_dogs` no longer substring-matches organization names.**
-  A query only resolves to an organization filter on a full-name match. See
-  the fix below for why.
+  A query resolves to an organization filter only on an exact match against
+  that organization's name, its name without a trailing `e.V.`, or an acronym
+  preceding a parenthetical expansion. So `"Daisy Family Rescue e.V."`,
+  `"Daisy Family Rescue"` and `"REAN"` all still resolve, while `"Daisy"`,
+  `"Paws"` and `"Trust"` are now treated as dog-name searches. See the fix
+  below for why.
 
 ### Added
 
@@ -58,25 +62,41 @@ in production are fixed.
 - `DogProfilerData` described fields the API never returns (`bio`,
   `looking_for`, `interests`, `deal_breakers`, `fun_fact`) while ignoring the
   ones it does. Compatibility values are strings (`"yes"`, `"no"`,
-  `"unknown"`, `"older_children"`, `"selective"`), not booleans; `"unknown"`
-  is now omitted so absence of data does not read as a "no".
+  `"unknown"`, `"older_children"`, `"selective"`), not booleans. Markdown
+  omits `"unknown"` so absence of data does not read as a "no"; JSON passes it
+  through, since an explicit `"unknown"` is more informative to a machine
+  reader than a missing key.
 - README documented the wrong macOS Claude Desktop config path, omitted about
   ten parameters, and overstated the catalogue (1,500+ dogs, 12+ organizations
   and 370+ breeds against an actual 1,393, 11 and 96).
 
+### Security
+
+- Carries the dependency remediation merged since 1.2.0, including
+  [#64](https://github.com/ssatama/rescuedogs-mcp-server/pull/64), which
+  resolved 36 Dependabot alerts, and an earlier round covering 12 more.
+  Roughly 36 dependency and CI commits are included in total, among them major
+  bumps of eslint, axios and zod.
+
 ### Migration
 
 Consumers of `response_format: "json"` should read `profile` where they read
-`dog_profiler_data`, and `slug` where they used the numeric `id`. Markdown
-consumers, which is the common case, need no changes. The stdio entrypoint,
-tool names and tool parameters are unchanged.
+`dog_profiler_data`, and `slug` where they used the numeric `id`.
 
-## [1.2.0] - 2026-01
+Markdown consumers need no code changes, but the output does gain content: dog
+profiles now render favourite activities, exercise and grooming needs,
+trainability, important notes and a fun fact, and compatibility lines appear
+where they previously did not. Anything snapshot-testing that markdown will
+need its snapshots refreshed.
+
+The stdio entrypoint, tool names and tool parameters are unchanged.
+
+## [1.2.0] - 2026-02-16
 
 Internal quality release: type deduplication, modular tool files, environment
 configuration, full test coverage, retry logic, and tool-call logging.
 
-## [1.1.0] - 2026-01
+## [1.1.0] - 2026-02-15
 
 Bug fixes and error boundaries: wired up the `match_preferences` compatibility
 parameters, added tool-level error handling, and fixed a version mismatch.

@@ -69,6 +69,7 @@
     "node": ">=20.0.0"
   },
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "CHANGELOG.md"
   ]
 }
