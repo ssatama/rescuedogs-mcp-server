@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { createHttpApp } from "./http-app.js";
+import { createHttpApp, resolvePort } from "./http-app.js";
 
-const port = Number(process.env.PORT ?? 3000);
+const port = resolvePort(process.env.PORT);
 const host = process.env.HOST ?? "0.0.0.0";
 
 const app = createHttpApp({

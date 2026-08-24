@@ -97,9 +97,53 @@ describe("http app", () => {
     expect(results).toEqual([8, 8, 8, 8, 8]);
   });
 
-  it("rejects a non-POST request to /mcp", async () => {
-    const res = await fetch(`${url}/mcp`, { method: "DELETE" });
-    expect(res.status).toBeGreaterThanOrEqual(400);
+  // The SDK client opens a standalone SSE stream with GET /mcp and treats 405
+  // as "no GET stream here". A 404 instead surfaces as a transport error on
+  // every session, so the exact status matters.
+  it.each(["GET", "DELETE", "PUT"])("answers %s /mcp with 405", async (method) => {
+    const res = await fetch(`${url}/mcp`, { method });
+    expect(res.status).toBe(405);
+    expect(res.headers.get("allow")).toBe("POST");
+    await expect(res.json()).resolves.toMatchObject({ jsonrpc: "2.0" });
+  });
+
+  it("answers malformed JSON with a JSON-RPC parse error, not an HTML stack", async () => {
+    const res = await fetch(`${url}/mcp`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{not json",
+    });
+    expect(res.status).toBe(400);
+    expect(res.headers.get("content-type")).toContain("application/json");
+    await expect(res.json()).resolves.toMatchObject({
+      jsonrpc: "2.0",
+      error: { code: -32700 },
+    });
+  });
+
+  it("answers an oversized body with a JSON-RPC error", async () => {
+    const res = await fetch(`${url}/mcp`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ pad: "x".repeat(2 * 1024 * 1024) }),
+    });
+    expect(res.status).toBe(413);
+    await expect(res.json()).resolves.toMatchObject({
+      error: { code: -32600 },
+    });
+  });
+
+  it("answers a CORS preflight so browser clients can connect", async () => {
+    const res = await fetch(`${url}/mcp`, {
+      method: "OPTIONS",
+      headers: {
+        origin: "https://example.com",
+        "access-control-request-method": "POST",
+        "access-control-request-headers": "content-type",
+      },
+    });
+    expect(res.status).toBeLessThan(300);
+    expect(res.headers.get("access-control-allow-origin")).toBeTruthy();
   });
 });
 
@@ -152,5 +196,21 @@ describe("rate limiting", () => {
       expect((await fetch(`${url}/health`)).status).toBe(200);
     }
     await close(server);
+  });
+});
+
+describe("port resolution", () => {
+  it.each([
+    ["", 3000],
+    ["   ", 3000],
+    ["not-a-port", 3000],
+    ["0", 3000],
+    ["-1", 3000],
+    ["70000", 3000],
+    ["8080", 8080],
+    [undefined, 3000],
+  ])("resolves PORT=%o to %i", async (value, expected) => {
+    const { resolvePort } = await import("../../src/http-app.js");
+    expect(resolvePort(value)).toBe(expected);
   });
 });
