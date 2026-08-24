@@ -69,6 +69,18 @@ describe("toPublicDog", () => {
     expect(Object.keys(toPublicDog(mockDog))).not.toContain("id");
   });
 
+  it("keeps required fields even when upstream sends null", () => {
+    // compact() strips nullish values; routing required fields through it
+    // would let adoption_url vanish while the type still promises it.
+    const dog = toPublicDog({
+      ...mockDog,
+      adoption_url: null as unknown as string,
+    });
+    expect(dog).toHaveProperty("adoption_url");
+    expect(dog).toHaveProperty("slug");
+    expect(dog).toHaveProperty("name");
+  });
+
   it("survives a dog with no profiler data or organization", () => {
     const dog = toPublicDog(mockDogMinimal);
     expect(dog.name).toBe("Rex");
@@ -106,6 +118,18 @@ describe("toPublicOrganization", () => {
     // organization_id is an input to rescuedogs_search_dogs, so it is
     // required to fulfil a follow-up query rather than internal metadata.
     expect(toPublicOrganization(mockOrganization).id).toBe(1);
+  });
+
+  it("keeps adoption-relevant content the markdown view already shows", () => {
+    // The JSON path returning less than the markdown path for the same call
+    // is a bug, not minimization: none of these are diagnostic.
+    const org = toPublicOrganization({
+      ...mockOrganization,
+      adoption_fees: { currency: "EUR", amount: 350, notes: "includes travel" },
+    });
+    expect(org.description).toBe("A rescue organization in Spain");
+    expect(org.new_this_week).toBe(3);
+    expect(org.adoption_fees).toMatchObject({ amount: 350 });
   });
 
   it("emits no timestamps or internal bookkeeping", () => {

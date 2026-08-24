@@ -77,7 +77,7 @@ interface ServiceRegion {
   region: string;
 }
 
-interface AdoptionFees {
+export interface AdoptionFees {
   currency: string;
   amount: number;
   notes: string;

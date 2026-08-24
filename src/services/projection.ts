@@ -1,4 +1,10 @@
-import type { Compatibility, Dog, DogProfilerData, Organization } from "../types.js";
+import type {
+  AdoptionFees,
+  Compatibility,
+  Dog,
+  DogProfilerData,
+  Organization,
+} from "../types.js";
 
 /**
  * Allowlisted views of the API records.
@@ -37,11 +43,14 @@ interface PublicProfile {
 export interface PublicOrganization {
   id: number;
   name: string;
+  description?: string;
   country?: string;
   city?: string;
   website_url?: string;
   ships_to?: string[];
+  adoption_fees?: AdoptionFees;
   total_dogs?: number;
+  new_this_week?: number;
 }
 
 export interface PublicDog {
@@ -64,8 +73,9 @@ export interface PublicDog {
 function compact<T extends object>(value: T): T {
   return Object.fromEntries(
     Object.entries(value).filter(
-      ([, v]) => v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0)
-    )
+      ([, v]) =>
+        v !== null && v !== undefined && !(Array.isArray(v) && v.length === 0),
+    ),
   ) as T;
 }
 
@@ -93,38 +103,50 @@ function toPublicProfile(profile: DogProfilerData): PublicProfile | undefined {
 }
 
 // The numeric id is deliberately absent: slug is the handle every tool takes.
+//
+// Required fields are set outside compact(): compact strips nullish values, so
+// routing them through it would let a null adoption_url silently disappear
+// while the type still claims it is there - and the server instructions tell
+// the model to always surface that link.
 export function toPublicDog(dog: Dog): PublicDog {
-  return compact<PublicDog>({
+  return {
     slug: dog.slug,
     name: dog.name,
-    breed: dog.standardized_breed ?? dog.breed ?? undefined,
-    breed_group: dog.breed_group ?? undefined,
-    age_text: dog.age_text ?? undefined,
-    age_min_months: dog.age_min_months ?? undefined,
-    age_max_months: dog.age_max_months ?? undefined,
-    sex: dog.sex ?? undefined,
-    size: dog.standardized_size ?? dog.size ?? undefined,
     adoption_url: dog.adoption_url,
-    primary_image_url: dog.primary_image_url ?? undefined,
-    profile: dog.dog_profiler_data
-      ? toPublicProfile(dog.dog_profiler_data)
-      : undefined,
-    organization: dog.organization
-      ? toPublicOrganization(dog.organization)
-      : undefined,
-  });
+    ...compact({
+      breed: dog.standardized_breed ?? dog.breed ?? undefined,
+      breed_group: dog.breed_group ?? undefined,
+      age_text: dog.age_text ?? undefined,
+      age_min_months: dog.age_min_months ?? undefined,
+      age_max_months: dog.age_max_months ?? undefined,
+      sex: dog.sex ?? undefined,
+      size: dog.standardized_size ?? dog.size ?? undefined,
+      primary_image_url: dog.primary_image_url ?? undefined,
+      profile: dog.dog_profiler_data
+        ? toPublicProfile(dog.dog_profiler_data)
+        : undefined,
+      organization: dog.organization
+        ? toPublicOrganization(dog.organization)
+        : undefined,
+    }),
+  };
 }
 
 // id is kept here: organization_id is a documented rescuedogs_search_dogs
 // filter, so it is needed to answer a follow-up query.
 export function toPublicOrganization(org: Organization): PublicOrganization {
-  return compact<PublicOrganization>({
+  return {
     id: org.id,
     name: org.name,
-    country: org.country ?? undefined,
-    city: org.city ?? undefined,
-    website_url: org.website_url ?? undefined,
-    ships_to: org.ships_to ?? undefined,
-    total_dogs: org.total_dogs ?? undefined,
-  });
+    ...compact({
+      description: org.description ?? undefined,
+      country: org.country ?? undefined,
+      city: org.city ?? undefined,
+      website_url: org.website_url ?? undefined,
+      ships_to: org.ships_to ?? undefined,
+      adoption_fees: org.adoption_fees ?? undefined,
+      total_dogs: org.total_dogs ?? undefined,
+      new_this_week: org.new_this_week ?? undefined,
+    }),
+  };
 }

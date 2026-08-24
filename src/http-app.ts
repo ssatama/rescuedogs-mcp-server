@@ -52,7 +52,10 @@ export function createHttpApp(options: HttpAppOptions = {}): Express {
   app.use(
     cors({
       origin: true,
-      methods: ["POST", "OPTIONS"],
+      // GET and DELETE are included so a browser client's preflight succeeds
+      // and it can reach the 405 below, rather than being blocked by CORS and
+      // surfacing a network error on every session.
+      methods: ["POST", "GET", "DELETE", "OPTIONS"],
       allowedHeaders: ["content-type", "accept", "mcp-session-id", "mcp-protocol-version", "last-event-id"],
       exposedHeaders: ["mcp-session-id"],
       maxAge: 86400,
@@ -110,15 +113,34 @@ function handleBodyParseError(
     next(err);
     return;
   }
-  const status = (err as { status?: number }).status ?? 500;
-  const tooLarge = (err as { type?: string }).type === "entity.too.large";
-  res.status(status === 500 ? 500 : status).json({
-    jsonrpc: "2.0",
-    error: tooLarge
-      ? { code: -32600, message: "Request body too large." }
-      : { code: -32700, message: "Parse error: request body is not valid JSON." },
-    id: null,
-  });
+
+  const { status, type } = err as { status?: number; type?: string };
+
+  // Only body-parser raises these. Anything else reaching this handler is a
+  // server fault, and reporting it as a client JSON syntax error would send
+  // whoever is debugging it in precisely the wrong direction.
+  if (type === "entity.too.large") {
+    res.status(status ?? 413).json(rpcError(-32600, "Request body too large."));
+    return;
+  }
+  if (type?.startsWith("entity.") || type?.startsWith("encoding.")) {
+    res
+      .status(status ?? 400)
+      .json(rpcError(-32700, "Parse error: request body is not valid JSON."));
+    return;
+  }
+
+  console.error(
+    JSON.stringify({
+      event: "unhandled_error",
+      message: err instanceof Error ? err.message : String(err),
+    })
+  );
+  res.status(status ?? 500).json(rpcError(-32603, "Internal server error"));
+}
+
+function rpcError(code: number, message: string) {
+  return { jsonrpc: "2.0" as const, error: { code, message }, id: null };
 }
 
 function buildLimiters(config: RateLimitOptions | false | undefined) {
@@ -159,9 +181,19 @@ async function handleMcpRequest(req: Request, res: Response): Promise<void> {
     sessionIdGenerator: undefined,
   });
 
+  // This is the only cleanup path on a public endpoint. An unhandled rejection
+  // would terminate the process under Node's default settings, taking every
+  // in-flight request with it.
   res.on("close", () => {
-    void transport.close();
-    void server.close();
+    const swallow = (error: unknown) =>
+      console.error(
+        JSON.stringify({
+          event: "mcp_cleanup_failed",
+          message: error instanceof Error ? error.message : String(error),
+        })
+      );
+    transport.close().catch(swallow);
+    server.close().catch(swallow);
   });
 
   try {

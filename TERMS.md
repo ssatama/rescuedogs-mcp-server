@@ -2,8 +2,10 @@
 
 **Last updated: 23 August 2026**
 
-These terms cover the `rescuedogs-mcp-server` MCP server and the remote endpoint
-at `https://mcp.rescuedogs.me/mcp`.
+These terms cover the `rescuedogs-mcp-server` MCP server and its remote
+endpoint, currently at
+`https://rescuedogs-mcp-production.up.railway.app/mcp`
+and in future also at `https://mcp.rescuedogs.me/mcp`.
 
 ## What this service is
 

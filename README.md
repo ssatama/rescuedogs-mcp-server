@@ -257,8 +257,13 @@ there are no sessions to expire and it scales horizontally without shared state.
 SSE is not implemented - it is deprecated in the MCP SDK, and the current spec
 revision defines only stdio and streamable HTTP.
 
-The public endpoint is rate limited per IP, 20 requests/minute and
-300 requests/hour. `/health` is exempt.
+The public endpoint is rate limited per IP, 120 requests/minute and
+3,000 requests/hour. `/health` is exempt.
+
+Those ceilings are deliberately generous. Hosted MCP clients egress from small
+shared IP pools, so a per-IP bucket is shared by everyone behind that client;
+the limits exist to stop a scraper hammering the backend, not to ration normal
+use.
 
 Run it locally:
 
