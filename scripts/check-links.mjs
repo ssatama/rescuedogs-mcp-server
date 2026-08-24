@@ -6,11 +6,14 @@
  * not. External http(s) links are not fetched - that would make the check
  * flaky and slow - only local targets are resolved.
  */
-import { readFileSync, existsSync } from "node:fs";
-import { globSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-const files = globSync("*.md", { cwd: process.cwd() }).sort();
+// readdirSync rather than fs.globSync: the latter needs Node 22 and this
+// package supports Node 20.
+const files = readdirSync(process.cwd())
+  .filter((f) => f.endsWith(".md"))
+  .sort();
 
 // Mirrors GitHub's heading -> fragment slugification.
 const slug = (heading) =>
