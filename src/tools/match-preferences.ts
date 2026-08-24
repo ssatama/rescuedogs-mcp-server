@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiClient } from "../services/api-client.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
+import { toPublicDog } from "../services/projection.js";
 import { MatchPreferencesInputSchema } from "../schemas/index.js";
 import {
   normalizeCountryForApi,
@@ -64,7 +65,7 @@ export function registerMatchPreferencesTool(server: McpServer): void {
                         good_with_cats: parsed.has_cats,
                       }),
                     },
-                    dogs,
+                    dogs: dogs.map(toPublicDog),
                   },
                   null,
                   2

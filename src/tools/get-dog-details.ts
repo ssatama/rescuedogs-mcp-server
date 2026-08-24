@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiClient } from "../services/api-client.js";
 import { formatDogMarkdown } from "../services/formatters.js";
 import { fetchDogImage } from "../services/image-service.js";
+import { toPublicDog } from "../services/projection.js";
 import { GetDogDetailsInputSchema } from "../schemas/index.js";
 import type { ImagePreset } from "../types.js";
 
@@ -30,7 +31,7 @@ export function registerGetDogDetailsTool(server: McpServer): void {
             content: [
               {
                 type: "text" as const,
-                text: JSON.stringify(dog, null, 2),
+                text: JSON.stringify(toPublicDog(dog), null, 2),
               },
             ],
           };

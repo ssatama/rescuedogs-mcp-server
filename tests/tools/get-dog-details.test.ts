@@ -99,7 +99,10 @@ describe("rescuedogs_get_dog_details handler", () => {
 
     const parsed = JSON.parse(result.content[0]!.text!);
     expect(parsed.name).toBe("Buddy");
-    expect(parsed.dog_profiler_data.tagline).toBe("Your new best friend!");
+    expect(parsed.profile.tagline).toBe("Your new best friend!");
+    // Projected, not raw: scraper and LLM bookkeeping must not ship.
+    expect(parsed).not.toHaveProperty("last_scraped_at");
+    expect(parsed).not.toHaveProperty("dog_profiler_data");
   });
 
   it("fetches the dog in a single request", async () => {

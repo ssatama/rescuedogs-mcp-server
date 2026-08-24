@@ -27,3 +27,17 @@ export const DISPLAY_LIMITS = {
   MAX_FILTER_COUNTRIES: 15,
   MAX_FILTER_BREEDS: 10,
 } as const;
+
+// Guards a public, unauthenticated endpoint that fronts the rescuedogs API.
+//
+// Deliberately generous. Hosted MCP clients egress from small shared IP pools,
+// so a per-IP bucket is really a per-client bucket shared by every user behind
+// it, and an agentic search loop can burn a dozen tool calls in one turn. These
+// ceilings are set to stop a scraper hammering the backend, not to ration
+// normal use; the response cache absorbs most repeat traffic below them.
+export const RATE_LIMITS = {
+  BURST: 120,
+  BURST_WINDOW_MS: 60 * 1000,
+  SUSTAINED: 3000,
+  SUSTAINED_WINDOW_MS: 60 * 60 * 1000,
+} as const;

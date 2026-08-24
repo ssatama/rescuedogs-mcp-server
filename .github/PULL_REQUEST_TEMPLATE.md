@@ -14,6 +14,6 @@
 ## Checklist
 
 - [ ] My code follows the project's coding style
-- [ ] I have run `npm run lint`, `npm run typecheck`, `npm run typecheck:tests` and `npm run lint:dead` (everything CI gates on)
+- [ ] I have run `npm run lint`, `npm run typecheck`, `npm run typecheck:tests`, `npm run lint:dead` and `npm run lint:links` (everything CI gates on)
 - [ ] I have tested my changes locally
 - [ ] I have updated documentation if needed

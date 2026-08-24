@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+.git
+.github
+tests
+*.md
+!README.md
+.DS_Store
+.codex
+.claude
