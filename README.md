@@ -378,6 +378,11 @@ and `build` on
 every pull request. `test:contract` runs on a schedule instead, so an upstream API
 outage cannot block an unrelated PR.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md). The 2.0.0 release changes the shape of
+`response_format: "json"` output; markdown output is unaffected.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and PRs welcome!
