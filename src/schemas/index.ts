@@ -31,7 +31,7 @@ export const SearchDogsInputSchema = z
       .string()
       .optional()
       .describe(
-        "Filter by FCI breed group (e.g., 'Herding', 'Sporting', 'Hound')"
+        "Filter by breed group. Valid values: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working. These are not FCI groups - an FCI group name matches nothing."
       ),
     size: SizeEnum.optional().describe("Filter by standardized size"),
     age_category: AgeCategoryEnum.optional().describe(
@@ -117,7 +117,9 @@ export const ListBreedsInputSchema = z
     breed_group: z
       .string()
       .optional()
-      .describe("Filter by FCI breed group (e.g., 'Herding', 'Sporting')"),
+      .describe(
+        "Filter by breed group. Valid values: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working."
+      ),
     min_count: z
       .number()
       .int()

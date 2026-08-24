@@ -4,6 +4,7 @@ import { formatDogMarkdown } from "../services/formatters.js";
 import { fetchDogImage } from "../services/image-service.js";
 import { toPublicDog } from "../services/projection.js";
 import { GetDogDetailsInputSchema } from "../schemas/index.js";
+import { GetDogDetailsOutputShape } from "../schemas/output.js";
 import type { ImagePreset } from "../types.js";
 
 export function registerGetDogDetailsTool(server: McpServer): void {
@@ -13,6 +14,7 @@ export function registerGetDogDetailsTool(server: McpServer): void {
       title: "Get dog details",
       description: "Get full details for a specific rescue dog including AI-generated personality profile, requirements, and adoption info.",
       inputSchema: GetDogDetailsInputSchema.shape,
+      outputSchema: GetDogDetailsOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -26,13 +28,13 @@ export function registerGetDogDetailsTool(server: McpServer): void {
 
         const dog = await apiClient.getDogBySlug(parsed.slug);
 
+        const structured = { dog: toPublicDog(dog) };
+
         if (parsed.response_format === "json") {
           return {
+            structuredContent: structured,
             content: [
-              {
-                type: "text" as const,
-                text: JSON.stringify(toPublicDog(dog), null, 2),
-              },
+              { type: "text" as const, text: JSON.stringify(structured.dog, null, 2) },
             ],
           };
         }
@@ -60,7 +62,7 @@ export function registerGetDogDetailsTool(server: McpServer): void {
           text: formatDogMarkdown(dog),
         });
 
-        return { content };
+        return { structuredContent: structured, content };
       } catch (error) {
         return {
           isError: true,

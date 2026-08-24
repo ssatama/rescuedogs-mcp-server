@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { GetAdoptionGuideInputSchema } from "../schemas/index.js";
+import { GetAdoptionGuideOutputShape } from "../schemas/output.js";
 import {
   ADOPTION_GUIDES,
   COUNTRY_SPECIFIC_GUIDES,
@@ -12,6 +13,7 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
       title: "Get adoption guide",
       description: "Get information about the rescue dog adoption process including transport, fees, requirements, and timeline.",
       inputSchema: GetAdoptionGuideInputSchema.shape,
+      outputSchema: GetAdoptionGuideOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -29,6 +31,7 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
 
         // Add country-specific info if provided
         let countryInfo = "";
+        let appliedCountry: string | undefined;
         if (parsed.country) {
           // Allow both GB (ISO standard) and UK (common user input)
           const normalizedCode =
@@ -36,15 +39,21 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
               ? "GB"
               : parsed.country.toUpperCase();
           countryInfo = COUNTRY_SPECIFIC_GUIDES[normalizedCode] || "";
+          // Only report a country when guidance for it was actually found, and
+          // report the normalized code that was looked up rather than the raw
+          // input, so a consumer can tell whether it applied.
+          if (countryInfo) appliedCountry = normalizedCode;
         }
 
+        const text = guide + countryInfo;
+
         return {
-          content: [
-            {
-              type: "text" as const,
-              text: guide + countryInfo,
-            },
-          ],
+          structuredContent: {
+            topic,
+            ...(appliedCountry && { country: appliedCountry }),
+            guide: text,
+          },
+          content: [{ type: "text" as const, text }],
         };
       } catch (error) {
         return {

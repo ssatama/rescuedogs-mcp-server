@@ -3,6 +3,7 @@ import { apiClient } from "../services/api-client.js";
 import { cacheService } from "../services/cache-service.js";
 import { formatBreedStatsMarkdown } from "../services/formatters.js";
 import { ListBreedsInputSchema } from "../schemas/index.js";
+import { ListBreedsOutputShape } from "../schemas/output.js";
 
 export function registerListBreedsTool(server: McpServer): void {
   server.registerTool(
@@ -11,6 +12,7 @@ export function registerListBreedsTool(server: McpServer): void {
       title: "List available breeds",
       description: "Get available breeds with counts and statistics. Shows which breeds have dogs available for adoption.",
       inputSchema: ListBreedsInputSchema.shape,
+      outputSchema: ListBreedsOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -55,22 +57,34 @@ export function registerListBreedsTool(server: McpServer): void {
           };
         }
 
-        if (parsed.response_format === "json") {
-          return {
-            content: [
-              {
-                type: "text" as const,
-                text: JSON.stringify(stats, null, 2),
-              },
-            ],
-          };
-        }
+        // Totals describe the breeds actually returned. stats.total_dogs and
+        // stats.unique_breeds stay platform-wide even after the breed_group and
+        // min_count filters above, so reporting them here would contradict the
+        // list beside them.
+        const shown = stats.qualifying_breeds.slice(0, parsed.limit);
+        const structured = {
+          total_dogs: shown.reduce((sum, b) => sum + b.count, 0),
+          unique_breeds: shown.length,
+          breeds: shown.map((b) => ({
+            primary_breed: b.primary_breed,
+            breed_slug: b.breed_slug,
+            breed_group: b.breed_group ?? undefined,
+            breed_type: b.breed_type ?? undefined,
+            count: b.count,
+            organization_count: b.organization_count ?? undefined,
+            personality_traits: b.personality_traits ?? undefined,
+          })),
+        };
 
         return {
+          structuredContent: structured,
           content: [
             {
               type: "text" as const,
-              text: formatBreedStatsMarkdown(stats, parsed.limit),
+              text:
+                parsed.response_format === "json"
+                  ? JSON.stringify(stats, null, 2)
+                  : formatBreedStatsMarkdown(stats, parsed.limit),
             },
           ],
         };

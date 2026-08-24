@@ -3,8 +3,9 @@ import { apiClient } from "../services/api-client.js";
 import { cacheService } from "../services/cache-service.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
-import { toPublicDog } from "../services/projection.js";
+import { toPublicDog, toPublicDogSummary } from "../services/projection.js";
 import { SearchDogsInputSchema } from "../schemas/index.js";
+import { SearchDogsOutputShape } from "../schemas/output.js";
 import type { ImagePreset, Organization } from "../types.js";
 import {
   AGE_CATEGORY_MAP,
@@ -38,6 +39,7 @@ export function registerSearchDogsTool(server: McpServer): void {
       title: "Search rescue dogs",
       description: "Search for rescue dogs available for adoption from European and UK organizations. Returns matching dogs with basic info. Use rescuedogs_get_dog_details for full profiles.",
       inputSchema: SearchDogsInputSchema.shape,
+      outputSchema: SearchDogsOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -101,8 +103,17 @@ export function registerSearchDogsTool(server: McpServer): void {
           offset: parsed.offset,
         });
 
+        const structured = {
+          count: dogs.length,
+          has_more: dogs.length === parsed.limit,
+          dogs: dogs.map(toPublicDogSummary),
+        };
+
         if (parsed.response_format === "json") {
+          // Text keeps the full records it returned in 2.0.0; only
+          // structuredContent uses the lighter summary shape.
           return {
+            structuredContent: structured,
             content: [
               {
                 type: "text" as const,
@@ -154,7 +165,7 @@ export function registerSearchDogsTool(server: McpServer): void {
           }
         }
 
-        return { content };
+        return { structuredContent: structured, content };
       } catch (error) {
         return {
           isError: true,
