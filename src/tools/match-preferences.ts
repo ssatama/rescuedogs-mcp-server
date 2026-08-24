@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiClient } from "../services/api-client.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
-import { toPublicDog } from "../services/projection.js";
+import { toPublicDog, toPublicDogSummary } from "../services/projection.js";
 import { MatchPreferencesInputSchema } from "../schemas/index.js";
 import { MatchPreferencesOutputShape } from "../schemas/output.js";
 import {
@@ -61,14 +61,26 @@ export function registerMatchPreferencesTool(server: McpServer): void {
               good_with_cats: parsed.has_cats,
             }),
           },
-          dogs: dogs.map(toPublicDog),
+          dogs: dogs.map(toPublicDogSummary),
         };
 
         if (parsed.response_format === "json") {
+          // Text keeps the full records it returned in 2.0.0.
           return {
             structuredContent: structured,
             content: [
-              { type: "text" as const, text: JSON.stringify(structured, null, 2) },
+              {
+                type: "text" as const,
+                text: JSON.stringify(
+                  {
+                    count: structured.count,
+                    matched_criteria: structured.matched_criteria,
+                    dogs: dogs.map(toPublicDog),
+                  },
+                  null,
+                  2
+                ),
+              },
             ],
           };
         }

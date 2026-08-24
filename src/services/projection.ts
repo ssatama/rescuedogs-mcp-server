@@ -132,6 +132,48 @@ export function toPublicDog(dog: Dog): PublicDog {
   };
 }
 
+export interface PublicDogSummary {
+  slug: string;
+  name: string;
+  breed?: string;
+  age_text?: string;
+  sex?: string;
+  size?: string;
+  adoption_url: string;
+  tagline?: string;
+  energy_level?: string;
+  experience_level?: string;
+  organization?: string;
+  organization_id?: number;
+}
+
+/**
+ * The list-result form. Search can return 50 dogs, and the full record runs
+ * ~1,400 characters each - 70KB of structured output on top of a text block
+ * the server deliberately caps at CHARACTER_LIMIT. A summary keeps list
+ * results proportionate; callers follow the slug to rescuedogs_get_dog_details
+ * for everything else.
+ */
+export function toPublicDogSummary(dog: Dog): PublicDogSummary {
+  const profile = dog.dog_profiler_data;
+  return {
+    slug: dog.slug,
+    name: dog.name,
+    adoption_url: dog.adoption_url,
+    ...compact({
+      breed: dog.standardized_breed ?? dog.breed ?? undefined,
+      age_text: dog.age_text ?? undefined,
+      sex: dog.sex ?? undefined,
+      size: dog.standardized_size ?? dog.size ?? undefined,
+      tagline: profile?.tagline ?? undefined,
+      energy_level: profile?.energy_level ?? undefined,
+      experience_level: profile?.experience_level ?? undefined,
+      organization: dog.organization?.name ?? undefined,
+      organization_id: dog.organization?.id ?? undefined,
+    }),
+  };
+}
+
 // id is kept here: organization_id is a documented rescuedogs_search_dogs
 // filter, so it is needed to answer a follow-up query.
 export function toPublicOrganization(org: Organization): PublicOrganization {

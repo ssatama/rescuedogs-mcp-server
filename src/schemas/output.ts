@@ -11,13 +11,13 @@ import { z } from "zod";
  * raw API records - the same allowlist, so nothing internal leaks here either.
  */
 
-const CompatibilitySchema = z.enum([
-  "yes",
-  "no",
-  "unknown",
-  "older_children",
-  "selective",
-]);
+// Deliberately not an enum. These values come from the API's LLM profiler, and
+// two of them ("older_children", "selective") only turned up after sampling
+// 600 dogs. A strict enum would turn the next unseen value into a protocol
+// error for the whole call rather than one odd field.
+const CompatibilitySchema = z
+  .string()
+  .describe('Usually "yes", "no", "unknown", "older_children" or "selective"');
 
 const ProfileSchema = z
   .object({
@@ -70,7 +70,12 @@ const DogSchema = z.object({
   age_max_months: z.number().optional(),
   sex: z.string().optional(),
   size: z.string().optional(),
-  adoption_url: z.string().describe("The rescue's own page - always surface this"),
+  // Nullable on purpose: toPublicDog keeps this field even when upstream sends
+  // null, and a required schema would fail the whole page over one bad record.
+  adoption_url: z
+    .string()
+    .nullish()
+    .describe("The rescue's own page - always surface this"),
   primary_image_url: z.string().optional(),
   profile: ProfileSchema.optional(),
   organization: OrganizationSchema.optional(),
@@ -82,10 +87,25 @@ const FilterOptionSchema = z.object({
   count: z.number().int(),
 });
 
+const DogSummarySchema = z.object({
+  slug: z.string().describe("Pass to rescuedogs_get_dog_details for the full profile"),
+  name: z.string(),
+  breed: z.string().optional(),
+  age_text: z.string().optional(),
+  sex: z.string().optional(),
+  size: z.string().optional(),
+  adoption_url: z.string().nullish(),
+  tagline: z.string().optional(),
+  energy_level: z.string().optional(),
+  experience_level: z.string().optional(),
+  organization: z.string().optional(),
+  organization_id: z.number().int().optional(),
+});
+
 export const SearchDogsOutputShape = {
   count: z.number().int().describe("Dogs returned by this call"),
   has_more: z.boolean().describe("Whether increasing offset may return more"),
-  dogs: z.array(DogSchema),
+  dogs: z.array(DogSummarySchema),
 };
 
 export const MatchPreferencesOutputShape = {
@@ -100,7 +120,7 @@ export const MatchPreferencesOutputShape = {
       good_with_cats: z.boolean().optional(),
     })
     .describe("Filters derived from the stated lifestyle"),
-  dogs: z.array(DogSchema),
+  dogs: z.array(DogSummarySchema),
 };
 
 export const GetDogDetailsOutputShape = { dog: DogSchema };
@@ -141,6 +161,10 @@ export const GetFilterCountsOutputShape = {
   available_country_options: z
     .array(FilterOptionSchema)
     .describe("Countries a dog can be adopted to, most available first"),
+  location_country_options: z
+    .array(FilterOptionSchema)
+    .describe("Countries dogs are currently located in"),
+  available_region_options: z.array(FilterOptionSchema),
 };
 
 export const GetAdoptionGuideOutputShape = {

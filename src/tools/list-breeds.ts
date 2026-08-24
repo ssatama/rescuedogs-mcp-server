@@ -57,10 +57,15 @@ export function registerListBreedsTool(server: McpServer): void {
           };
         }
 
+        // Totals describe the breeds actually returned. stats.total_dogs and
+        // stats.unique_breeds stay platform-wide even after the breed_group and
+        // min_count filters above, so reporting them here would contradict the
+        // list beside them.
+        const shown = stats.qualifying_breeds.slice(0, parsed.limit);
         const structured = {
-          total_dogs: stats.total_dogs,
-          unique_breeds: stats.unique_breeds,
-          breeds: stats.qualifying_breeds.slice(0, parsed.limit).map((b) => ({
+          total_dogs: shown.reduce((sum, b) => sum + b.count, 0),
+          unique_breeds: shown.length,
+          breeds: shown.map((b) => ({
             primary_breed: b.primary_breed,
             breed_slug: b.breed_slug,
             breed_group: b.breed_group ?? undefined,

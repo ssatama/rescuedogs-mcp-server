@@ -84,6 +84,8 @@ export function registerGetFilterCountsTool(server: McpServer): void {
           available_country_options: [...counts.available_country_options].sort(
             (a, b) => b.count - a.count
           ),
+          location_country_options: counts.location_country_options,
+          available_region_options: counts.available_region_options,
         };
 
         return {

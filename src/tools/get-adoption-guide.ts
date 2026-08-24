@@ -31,6 +31,7 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
 
         // Add country-specific info if provided
         let countryInfo = "";
+        let appliedCountry: string | undefined;
         if (parsed.country) {
           // Allow both GB (ISO standard) and UK (common user input)
           const normalizedCode =
@@ -38,6 +39,10 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
               ? "GB"
               : parsed.country.toUpperCase();
           countryInfo = COUNTRY_SPECIFIC_GUIDES[normalizedCode] || "";
+          // Only report a country when guidance for it was actually found, and
+          // report the normalized code that was looked up rather than the raw
+          // input, so a consumer can tell whether it applied.
+          if (countryInfo) appliedCountry = normalizedCode;
         }
 
         const text = guide + countryInfo;
@@ -45,7 +50,7 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
         return {
           structuredContent: {
             topic,
-            ...(parsed.country && { country: parsed.country }),
+            ...(appliedCountry && { country: appliedCountry }),
             guide: text,
           },
           content: [{ type: "text" as const, text }],
