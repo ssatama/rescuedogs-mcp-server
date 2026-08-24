@@ -70,4 +70,11 @@ describe("tool registration metadata", () => {
   it.each(EXPECTED)("%s declares an input schema object", (name) => {
     expect(mock.getConfig(name).inputSchema).toBeTypeOf("object");
   });
+
+  // Declaring an output schema obliges every success path to return
+  // structuredContent - the SDK throws otherwise - so this is a contract the
+  // handlers must uphold, not just listing metadata.
+  it.each(EXPECTED)("%s declares an output schema", (name) => {
+    expect(mock.getConfig(name).outputSchema).toBeTypeOf("object");
+  });
 });

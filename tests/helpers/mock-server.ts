@@ -4,6 +4,7 @@ import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 
 type ToolHandler = (input: Record<string, unknown>) => Promise<{
   content: Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
+  structuredContent?: Record<string, unknown>;
   isError?: boolean;
 }>;
 
@@ -11,6 +12,7 @@ export interface ToolConfig {
   title?: string;
   description?: string;
   inputSchema?: unknown;
+  outputSchema?: unknown;
   annotations?: ToolAnnotations;
 }
 

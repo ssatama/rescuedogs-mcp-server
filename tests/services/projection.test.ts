@@ -125,11 +125,11 @@ describe("toPublicOrganization", () => {
     // is a bug, not minimization: none of these are diagnostic.
     const org = toPublicOrganization({
       ...mockOrganization,
-      adoption_fees: { currency: "EUR", amount: 350, notes: "includes travel" },
+      adoption_fees: { currency: "EUR", usual_fee: 350 },
     });
     expect(org.description).toBe("A rescue organization in Spain");
     expect(org.new_this_week).toBe(3);
-    expect(org.adoption_fees).toMatchObject({ amount: 350 });
+    expect(org.adoption_fees).toMatchObject({ currency: "EUR", usual_fee: 350 });
   });
 
   it("emits no timestamps or internal bookkeeping", () => {

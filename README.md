@@ -59,7 +59,7 @@ Search for rescue dogs with comprehensive filtering.
 **Parameters:**
 - `query` - Free-text search
 - `breed` - Filter by breed name
-- `breed_group` - Filter by FCI group (Herding, Sporting, etc.)
+- `breed_group` - Filter by breed group: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working
 - `size` - Tiny, Small, Medium, Large, XLarge
 - `age_category` - puppy, young, adult, senior
 - `sex` - male, female
@@ -99,7 +99,7 @@ Get available breeds with counts and statistics.
 ```
 
 **Parameters:**
-- `breed_group` - Filter by FCI group
+- `breed_group` - Filter by breed group (see the list under `rescuedogs_search_dogs`)
 - `min_count` - Minimum dogs available
 - `limit` - Number of breeds to return (1-100, default 20)
 - `response_format` - `markdown` (default) or `json`

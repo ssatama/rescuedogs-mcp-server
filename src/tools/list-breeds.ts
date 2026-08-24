@@ -3,6 +3,7 @@ import { apiClient } from "../services/api-client.js";
 import { cacheService } from "../services/cache-service.js";
 import { formatBreedStatsMarkdown } from "../services/formatters.js";
 import { ListBreedsInputSchema } from "../schemas/index.js";
+import { ListBreedsOutputShape } from "../schemas/output.js";
 
 export function registerListBreedsTool(server: McpServer): void {
   server.registerTool(
@@ -11,6 +12,7 @@ export function registerListBreedsTool(server: McpServer): void {
       title: "List available breeds",
       description: "Get available breeds with counts and statistics. Shows which breeds have dogs available for adoption.",
       inputSchema: ListBreedsInputSchema.shape,
+      outputSchema: ListBreedsOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -55,22 +57,29 @@ export function registerListBreedsTool(server: McpServer): void {
           };
         }
 
-        if (parsed.response_format === "json") {
-          return {
-            content: [
-              {
-                type: "text" as const,
-                text: JSON.stringify(stats, null, 2),
-              },
-            ],
-          };
-        }
+        const structured = {
+          total_dogs: stats.total_dogs,
+          unique_breeds: stats.unique_breeds,
+          breeds: stats.qualifying_breeds.slice(0, parsed.limit).map((b) => ({
+            primary_breed: b.primary_breed,
+            breed_slug: b.breed_slug,
+            breed_group: b.breed_group ?? undefined,
+            breed_type: b.breed_type ?? undefined,
+            count: b.count,
+            organization_count: b.organization_count ?? undefined,
+            personality_traits: b.personality_traits ?? undefined,
+          })),
+        };
 
         return {
+          structuredContent: structured,
           content: [
             {
               type: "text" as const,
-              text: formatBreedStatsMarkdown(stats, parsed.limit),
+              text:
+                parsed.response_format === "json"
+                  ? JSON.stringify(stats, null, 2)
+                  : formatBreedStatsMarkdown(stats, parsed.limit),
             },
           ],
         };

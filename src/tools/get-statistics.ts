@@ -3,6 +3,7 @@ import { apiClient } from "../services/api-client.js";
 import { cacheService } from "../services/cache-service.js";
 import { formatStatisticsMarkdown } from "../services/formatters.js";
 import { GetStatisticsInputSchema } from "../schemas/index.js";
+import { GetStatisticsOutputShape } from "../schemas/output.js";
 
 export function registerGetStatisticsTool(server: McpServer): void {
   server.registerTool(
@@ -11,6 +12,7 @@ export function registerGetStatisticsTool(server: McpServer): void {
       title: "Get platform statistics",
       description: "Get overall statistics about available rescue dogs on the platform.",
       inputSchema: GetStatisticsInputSchema.shape,
+      outputSchema: GetStatisticsOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -33,22 +35,26 @@ export function registerGetStatisticsTool(server: McpServer): void {
           cacheService.setStatistics(stats);
         }
 
-        if (parsed.response_format === "json") {
-          return {
-            content: [
-              {
-                type: "text" as const,
-                text: JSON.stringify(stats, null, 2),
-              },
-            ],
-          };
-        }
+        const structured = {
+          total_dogs: stats.total_dogs,
+          total_organizations: stats.total_organizations,
+          countries: stats.countries.map((c) => ({
+            country: c.country,
+            count: c.count,
+          })),
+        };
 
         return {
+          structuredContent: structured,
           content: [
             {
               type: "text" as const,
-              text: formatStatisticsMarkdown(stats),
+              // Unchanged from 2.0.0 - structuredContent is additive, so the
+              // text payload must not shift under existing consumers.
+              text:
+                parsed.response_format === "json"
+                  ? JSON.stringify(stats, null, 2)
+                  : formatStatisticsMarkdown(stats),
             },
           ],
         };

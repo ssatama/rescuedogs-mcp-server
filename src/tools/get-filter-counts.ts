@@ -3,6 +3,7 @@ import { apiClient } from "../services/api-client.js";
 import { cacheService } from "../services/cache-service.js";
 import { formatFilterCountsMarkdown } from "../services/formatters.js";
 import { GetFilterCountsInputSchema } from "../schemas/index.js";
+import { GetFilterCountsOutputShape } from "../schemas/output.js";
 import {
   AGE_CATEGORY_MAP,
   SEX_MAP,
@@ -16,6 +17,7 @@ export function registerGetFilterCountsTool(server: McpServer): void {
       title: "Get filter options",
       description: "Get available filter options with counts based on current filter context. Use this to show users valid filter choices that won't result in empty searches.",
       inputSchema: GetFilterCountsInputSchema.shape,
+      outputSchema: GetFilterCountsOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -72,29 +74,35 @@ export function registerGetFilterCountsTool(server: McpServer): void {
           cacheService.setFilterCounts(filterHash, counts);
         }
 
-        if (parsed.response_format === "json") {
-          // Sort available_country_options by count descending (most relevant first)
-          const sortedCounts = {
-            ...counts,
-            available_country_options: [
-              ...counts.available_country_options,
-            ].sort((a, b) => b.count - a.count),
-          };
-          return {
-            content: [
-              {
-                type: "text" as const,
-                text: JSON.stringify(sortedCounts, null, 2),
-              },
-            ],
-          };
-        }
+        // Countries sorted by count so the most useful choices come first
+        const structured = {
+          size_options: counts.size_options,
+          age_options: counts.age_options,
+          sex_options: counts.sex_options,
+          breed_options: counts.breed_options,
+          organization_options: counts.organization_options,
+          available_country_options: [...counts.available_country_options].sort(
+            (a, b) => b.count - a.count
+          ),
+        };
 
         return {
+          structuredContent: structured,
           content: [
             {
               type: "text" as const,
-              text: formatFilterCountsMarkdown(counts),
+              text:
+                parsed.response_format === "json"
+                  ? JSON.stringify(
+                      {
+                        ...counts,
+                        available_country_options:
+                          structured.available_country_options,
+                      },
+                      null,
+                      2
+                    )
+                  : formatFilterCountsMarkdown(counts),
             },
           ],
         };

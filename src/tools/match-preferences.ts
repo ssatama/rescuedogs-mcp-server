@@ -4,6 +4,7 @@ import { formatDogsListMarkdown } from "../services/formatters.js";
 import { fetchDogImages } from "../services/image-service.js";
 import { toPublicDog } from "../services/projection.js";
 import { MatchPreferencesInputSchema } from "../schemas/index.js";
+import { MatchPreferencesOutputShape } from "../schemas/output.js";
 import {
   normalizeCountryForApi,
   HOME_TYPE_MAP,
@@ -19,6 +20,7 @@ export function registerMatchPreferencesTool(server: McpServer): void {
       title: "Match dogs to lifestyle",
       description: "Find dogs that match your lifestyle preferences. Translates your living situation, activity level, and experience into appropriate filters.",
       inputSchema: MatchPreferencesInputSchema.shape,
+      outputSchema: MatchPreferencesOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -43,34 +45,30 @@ export function registerMatchPreferencesTool(server: McpServer): void {
           limit: parsed.limit,
         });
 
+        const structured = {
+          count: dogs.length,
+          matched_criteria: {
+            home_type: HOME_TYPE_MAP[parsed.living_situation]!,
+            energy_level: ENERGY_LEVEL_MAP[parsed.activity_level]!,
+            experience_level: EXPERIENCE_MAP[parsed.experience]!,
+            ...(parsed.has_children !== undefined && {
+              good_with_kids: parsed.has_children,
+            }),
+            ...(parsed.has_other_dogs !== undefined && {
+              good_with_dogs: parsed.has_other_dogs,
+            }),
+            ...(parsed.has_cats !== undefined && {
+              good_with_cats: parsed.has_cats,
+            }),
+          },
+          dogs: dogs.map(toPublicDog),
+        };
+
         if (parsed.response_format === "json") {
           return {
+            structuredContent: structured,
             content: [
-              {
-                type: "text" as const,
-                text: JSON.stringify(
-                  {
-                    count: dogs.length,
-                    matched_criteria: {
-                      home_type: HOME_TYPE_MAP[parsed.living_situation],
-                      energy_level: ENERGY_LEVEL_MAP[parsed.activity_level],
-                      experience_level: EXPERIENCE_MAP[parsed.experience],
-                      ...(parsed.has_children !== undefined && {
-                        good_with_kids: parsed.has_children,
-                      }),
-                      ...(parsed.has_other_dogs !== undefined && {
-                        good_with_dogs: parsed.has_other_dogs,
-                      }),
-                      ...(parsed.has_cats !== undefined && {
-                        good_with_cats: parsed.has_cats,
-                      }),
-                    },
-                    dogs: dogs.map(toPublicDog),
-                  },
-                  null,
-                  2
-                ),
-              },
+              { type: "text" as const, text: JSON.stringify(structured, null, 2) },
             ],
           };
         }
@@ -135,7 +133,7 @@ ${compatibilityLines}
           }
         }
 
-        return { content };
+        return { structuredContent: structured, content };
       } catch (error) {
         return {
           isError: true,

@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { GetAdoptionGuideInputSchema } from "../schemas/index.js";
+import { GetAdoptionGuideOutputShape } from "../schemas/output.js";
 import {
   ADOPTION_GUIDES,
   COUNTRY_SPECIFIC_GUIDES,
@@ -12,6 +13,7 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
       title: "Get adoption guide",
       description: "Get information about the rescue dog adoption process including transport, fees, requirements, and timeline.",
       inputSchema: GetAdoptionGuideInputSchema.shape,
+      outputSchema: GetAdoptionGuideOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -38,13 +40,15 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
           countryInfo = COUNTRY_SPECIFIC_GUIDES[normalizedCode] || "";
         }
 
+        const text = guide + countryInfo;
+
         return {
-          content: [
-            {
-              type: "text" as const,
-              text: guide + countryInfo,
-            },
-          ],
+          structuredContent: {
+            topic,
+            ...(parsed.country && { country: parsed.country }),
+            guide: text,
+          },
+          content: [{ type: "text" as const, text }],
         };
       } catch (error) {
         return {

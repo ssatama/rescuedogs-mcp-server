@@ -3,6 +3,7 @@ import { apiClient } from "../services/api-client.js";
 import { cacheService } from "../services/cache-service.js";
 import { formatOrganizationsListMarkdown } from "../services/formatters.js";
 import { ListOrganizationsInputSchema } from "../schemas/index.js";
+import { ListOrganizationsOutputShape } from "../schemas/output.js";
 import { normalizeCountryForApi } from "../utils/mappings.js";
 import { toPublicOrganization } from "../services/projection.js";
 
@@ -13,6 +14,7 @@ export function registerListOrganizationsTool(server: McpServer): void {
       title: "List rescue organizations",
       description: "List rescue organizations with their statistics and available dogs count.",
       inputSchema: ListOrganizationsInputSchema.shape,
+      outputSchema: ListOrganizationsOutputShape,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -43,22 +45,20 @@ export function registerListOrganizationsTool(server: McpServer): void {
           }
         }
 
-        if (parsed.response_format === "json") {
-          return {
-            content: [
-              {
-                type: "text" as const,
-                text: JSON.stringify(orgs.map(toPublicOrganization), null, 2),
-              },
-            ],
-          };
-        }
+        const structured = {
+          count: orgs.length,
+          organizations: orgs.map(toPublicOrganization),
+        };
 
         return {
+          structuredContent: structured,
           content: [
             {
               type: "text" as const,
-              text: formatOrganizationsListMarkdown(orgs),
+              text:
+                parsed.response_format === "json"
+                  ? JSON.stringify(structured.organizations, null, 2)
+                  : formatOrganizationsListMarkdown(orgs),
             },
           ],
         };

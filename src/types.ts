@@ -77,10 +77,11 @@ interface ServiceRegion {
   region: string;
 }
 
+// Verified against all 11 organizations: the API returns currency and
+// usual_fee. There is no amount or notes field.
 export interface AdoptionFees {
-  currency: string;
-  amount: number;
-  notes: string;
+  currency?: string;
+  usual_fee?: number;
 }
 
 export interface BreedStats {
