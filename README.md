@@ -18,13 +18,10 @@ MCP server for discovering rescue dogs from European and UK organizations. Searc
 No install. Add the endpoint as a custom connector or remote MCP server:
 
 ```
-https://rescuedogs-mcp-production.up.railway.app/mcp
+https://mcp.rescuedogs.me/mcp
 ```
 
 It speaks MCP streamable HTTP, needs no authentication, and is read-only.
-
-`https://mcp.rescuedogs.me/mcp` will become the canonical address once its DNS
-record is live; until then use the URL above.
 
 ### Local (npm, stdio)
 

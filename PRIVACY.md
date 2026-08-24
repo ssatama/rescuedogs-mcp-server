@@ -3,9 +3,7 @@
 **Last updated: 23 August 2026**
 
 This policy covers the `rescuedogs-mcp-server` MCP server, both the remote
-endpoint at `https://rescuedogs-mcp-production.up.railway.app/mcp`
-and the npm package that runs locally over stdio. It will also cover
-`https://mcp.rescuedogs.me/mcp` once that address is live.
+endpoint at `https://mcp.rescuedogs.me/mcp` and the npm package that runs locally over stdio.
 
 ## The short version
 
