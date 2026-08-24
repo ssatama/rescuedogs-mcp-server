@@ -17,6 +17,7 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "lint:dead": "knip",
+    "lint:links": "node scripts/check-links.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:contract": "vitest run --config vitest.contract.config.ts",

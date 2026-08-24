@@ -38,6 +38,9 @@ jobs:
       - name: Dead code
         run: npm run lint:dead
 
+      - name: Docs links
+        run: npm run lint:links
+
       - name: Test
         run: npm test
 

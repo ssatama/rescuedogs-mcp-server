@@ -361,6 +361,9 @@ npm run lint:fix
 # Report unused exports, files and dependencies
 npm run lint:dead
 
+# Check markdown links and cross-file heading anchors
+npm run lint:links
+
 # Build
 npm run build
 
@@ -368,7 +371,8 @@ npm run build
 npm run dev
 ```
 
-CI runs `lint`, `typecheck`, `typecheck:tests`, `lint:dead`, `test` and `build` on
+CI runs `lint`, `typecheck`, `typecheck:tests`, `lint:dead`, `lint:links`, `test`
+and `build` on
 every pull request. `test:contract` runs on a schedule instead, so an upstream API
 outage cannot block an unrelated PR.
 
