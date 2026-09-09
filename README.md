@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ssatama-rescuedogs-mcp-server-badge.png)](https://mseep.ai/app/ssatama-rescuedogs-mcp-server)
+
 # rescuedogs-mcp-server
 
 [![npm version](https://badge.fury.io/js/rescuedogs-mcp-server.svg)](https://www.npmjs.com/package/rescuedogs-mcp-server)
