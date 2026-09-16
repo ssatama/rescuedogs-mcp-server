@@ -10,9 +10,15 @@ updates:
       development-dependencies:
         dependency-type: development
     ignore:
+      # typescript-eslint pins peer ranges for eslint and typescript; major
+      # bumps of either land in the grouped PR and break `npm ci` with ERESOLVE
+      # (TypeScript 7: #62, #65, #75). Lift these once typescript-eslint's
+      # peerDependencies admit the new major.
       - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@eslint/js"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "deps"
@@ -22,5 +28,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
     commit-message:
       prefix: "ci"
