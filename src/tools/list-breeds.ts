@@ -62,6 +62,11 @@ export function registerListBreedsTool(server: McpServer): void {
         // min_count filters above, so reporting them here would contradict the
         // list beside them.
         const shown = stats.qualifying_breeds.slice(0, parsed.limit);
+        const filters = [
+          parsed.breed_group && `breed_group "${parsed.breed_group}"`,
+          parsed.min_count && parsed.min_count > 1 && `min_count ${parsed.min_count}`,
+        ].filter(Boolean);
+        const filterLabel = filters.length > 0 ? filters.join(" and ") : undefined;
         const structured = {
           total_dogs: shown.reduce((sum, b) => sum + b.count, 0),
           unique_breeds: shown.length,
@@ -84,7 +89,7 @@ export function registerListBreedsTool(server: McpServer): void {
               text:
                 parsed.response_format === "json"
                   ? JSON.stringify(stats, null, 2)
-                  : formatBreedStatsMarkdown(stats, parsed.limit),
+                  : formatBreedStatsMarkdown(stats, parsed.limit, filterLabel),
             },
           ],
         };

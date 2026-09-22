@@ -257,14 +257,34 @@ No dogs found matching your criteria.
   return truncateIfNeeded(parts.join("\n"));
 }
 
+/**
+ * @param filterLabel Describes the breed_group / min_count filters applied to
+ * qualifying_breeds, if any. The stats totals stay platform-wide after
+ * filtering, so a filtered list needs its own count and labelled totals.
+ */
 export function formatBreedStatsMarkdown(
   stats: BreedStats,
-  limit?: number
+  limit?: number,
+  filterLabel?: string
 ): string {
   const parts: string[] = [];
+  const breeds = limit
+    ? stats.qualifying_breeds.slice(0, limit)
+    : stats.qualifying_breeds;
 
   parts.push("# Available Breeds");
   parts.push("");
+  if (filterLabel) {
+    const dogs = breeds.reduce((sum, b) => sum + b.count, 0);
+    parts.push(
+      breeds.length > 0
+        ? `**Showing ${breeds.length} ${breeds.length === 1 ? "breed" : "breeds"} (${dogs.toLocaleString()} dogs) matching ${filterLabel}.**`
+        : `**No breeds match ${filterLabel}.**`
+    );
+    parts.push("");
+    parts.push("Platform-wide totals, across all breeds:");
+    parts.push("");
+  }
   parts.push(`**Total Dogs:** ${stats.total_dogs.toLocaleString()}`);
   parts.push(`**Unique Breeds:** ${stats.unique_breeds.toLocaleString()}`);
   parts.push(`**Purebred:** ${stats.purebred_count.toLocaleString()}`);
@@ -279,10 +299,6 @@ export function formatBreedStatsMarkdown(
     }
     parts.push("");
   }
-
-  const breeds = limit
-    ? stats.qualifying_breeds.slice(0, limit)
-    : stats.qualifying_breeds;
 
   if (breeds.length > 0) {
     parts.push("## Top Breeds");

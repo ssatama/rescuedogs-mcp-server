@@ -92,6 +92,39 @@ describe("rescuedogs_list_breeds handler", () => {
     expect(parsed.qualifying_breeds).toHaveLength(0);
   });
 
+  it("labels platform totals and counts the filtered list in markdown", async () => {
+    vi.mocked(cacheService.getBreedStats).mockReturnValue(mockBreedStats);
+
+    const handler = getHandler("rescuedogs_list_breeds");
+    const result = await handler({ breed_group: "retrievers" });
+
+    const text = result.content[0]!.text!;
+    expect(text).toContain('Showing 1 breed (120 dogs) matching breed_group "retrievers".');
+    expect(text).toContain("Platform-wide totals");
+    expect(text).toContain("Golden Retriever");
+    expect(text).not.toContain("German Shepherd");
+  });
+
+  it("says so in markdown when no breed matches the filters", async () => {
+    vi.mocked(cacheService.getBreedStats).mockReturnValue(mockBreedStats);
+
+    const handler = getHandler("rescuedogs_list_breeds");
+    const result = await handler({ breed_group: "Shepherds", min_count: 100 });
+
+    expect(result.content[0]!.text).toContain(
+      'No breeds match breed_group "Shepherds" and min_count 100.'
+    );
+  });
+
+  it("leaves unfiltered markdown without a filter summary", async () => {
+    vi.mocked(cacheService.getBreedStats).mockReturnValue(mockBreedStats);
+
+    const handler = getHandler("rescuedogs_list_breeds");
+    const result = await handler({});
+
+    expect(result.content[0]!.text).not.toContain("Platform-wide totals");
+  });
+
   it("returns JSON format with breed stats object", async () => {
     vi.mocked(cacheService.getBreedStats).mockReturnValue(mockBreedStats);
 
