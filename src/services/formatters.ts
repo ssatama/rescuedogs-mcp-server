@@ -257,14 +257,41 @@ No dogs found matching your criteria.
   return truncateIfNeeded(parts.join("\n"));
 }
 
+/**
+ * @param filterLabel Describes the breed_group / min_count filters applied to
+ * qualifying_breeds, if any. The stats totals stay platform-wide after
+ * filtering, so a filtered list needs its own count and labelled totals.
+ */
 export function formatBreedStatsMarkdown(
   stats: BreedStats,
-  limit?: number
+  limit?: number,
+  filterLabel?: string
 ): string {
   const parts: string[] = [];
+  const breeds = limit
+    ? stats.qualifying_breeds.slice(0, limit)
+    : stats.qualifying_breeds;
 
   parts.push("# Available Breeds");
   parts.push("");
+  if (filterLabel) {
+    const matched = stats.qualifying_breeds;
+    const countDogs = (list: typeof matched) =>
+      list.reduce((sum, b) => sum + b.count, 0).toLocaleString();
+    const noun = matched.length === 1 ? "breed" : "breeds";
+    let summary: string;
+    if (matched.length === 0) {
+      summary = `No breeds match ${filterLabel}.`;
+    } else if (breeds.length < matched.length) {
+      summary = `Showing the first ${breeds.length} of ${matched.length} ${noun} matching ${filterLabel} (${countDogs(breeds)} of ${countDogs(matched)} dogs). Increase limit to see more.`;
+    } else {
+      summary = `Showing ${matched.length} ${noun} (${countDogs(matched)} dogs) matching ${filterLabel}.`;
+    }
+    parts.push(`**${summary}**`);
+    parts.push("");
+    parts.push("Platform-wide totals, across all breeds:");
+    parts.push("");
+  }
   parts.push(`**Total Dogs:** ${stats.total_dogs.toLocaleString()}`);
   parts.push(`**Unique Breeds:** ${stats.unique_breeds.toLocaleString()}`);
   parts.push(`**Purebred:** ${stats.purebred_count.toLocaleString()}`);
@@ -279,10 +306,6 @@ export function formatBreedStatsMarkdown(
     }
     parts.push("");
   }
-
-  const breeds = limit
-    ? stats.qualifying_breeds.slice(0, limit)
-    : stats.qualifying_breeds;
 
   if (breeds.length > 0) {
     parts.push("## Top Breeds");
