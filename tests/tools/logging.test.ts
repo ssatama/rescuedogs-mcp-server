@@ -49,6 +49,8 @@ describe("wrapWithLogging", () => {
     const logLine = JSON.parse(stderrSpy.mock.calls[0]![0] as string);
     expect(logLine.tool).toBe("test_tool");
     expect(logLine.status).toBe("ok");
+    expect(logLine.level).toBe("info");
+    expect(logLine.message).toBe("tool test_tool ok");
     expect(typeof logLine.duration_ms).toBe("number");
     expect(logLine.duration_ms).toBeGreaterThanOrEqual(0);
   });
@@ -72,6 +74,29 @@ describe("wrapWithLogging", () => {
     const logLine = JSON.parse(stderrSpy.mock.calls[0]![0] as string);
     expect(logLine.tool).toBe("failing_tool");
     expect(logLine.status).toBe("error");
+    expect(logLine.level).toBe("warn");
     expect(typeof logLine.duration_ms).toBe("number");
+  });
+
+  it("logs at error level and rethrows when the handler throws", async () => {
+    wrapWithLogging(mockServer);
+
+    (mockServer.registerTool as unknown as Function)(
+      "throwing_tool",
+      { title: "Throwing tool", description: "description" },
+      async () => {
+        throw new Error("boom");
+      }
+    );
+
+    const handler = registeredHandlers.get("throwing_tool")!;
+    await expect(handler({})).rejects.toThrow("boom");
+
+    expect(stderrSpy).toHaveBeenCalledOnce();
+    const logLine = JSON.parse(stderrSpy.mock.calls[0]![0] as string);
+    expect(logLine.tool).toBe("throwing_tool");
+    expect(logLine.status).toBe("error");
+    expect(logLine.level).toBe("error");
+    expect(logLine.error).toBe("boom");
   });
 });

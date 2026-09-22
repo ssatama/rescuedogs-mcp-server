@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createHttpApp, resolvePort } from "./http-app.js";
+import { log } from "./log.js";
 
 const port = resolvePort(process.env.PORT);
 const host = process.env.HOST ?? "0.0.0.0";
@@ -10,7 +11,7 @@ const app = createHttpApp({
 });
 
 const server = app.listen(port, host, () => {
-  console.error(`rescuedogs-mcp-server listening on http://${host}:${port}/mcp`);
+  log("info", `rescuedogs-mcp-server listening on http://${host}:${port}/mcp`);
 });
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
