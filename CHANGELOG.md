@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Tools now return typed, structured results alongside their text, and a round
 of runtime dependency advisories is patched. Text output is unchanged from
-2.0.0.
+2.0.0 apart from the `rescuedogs_list_breeds` markdown fix below.
 
 ### Added
 
@@ -19,7 +19,8 @@ of runtime dependency advisories is patched. Text output is unchanged from
   `structuredContent` is new. List tools return a per-dog summary (slug, name,
   breed, age, sex, size, adoption_url, tagline, energy, experience,
   organization) in structured output; `rescuedogs_get_dog_details` returns
-  the full record.
+  the full record. `rescuedogs_get_adoption_guide` reports the normalized
+  country code (`"uk"` becomes `GB`), and only when guidance was found.
 - Structured logs on the HTTP server carry a `level` (`info` for successful
   tool calls, `warn` for handled tool errors, `error` for thrown handlers and
   request failures), so hosts that classify stderr as errors no longer flag
@@ -33,11 +34,12 @@ of runtime dependency advisories is patched. Text output is unchanged from
   plus two custom ones (Designer/Hybrid, Guardian, Herding, Hound, Mixed,
   Non-Sporting, Sporting, Terrier, Toy, Working), now listed in the parameter
   description, so FCI names no longer silently return zero results.
-- `rescuedogs_list_breeds` reported platform-wide totals beside a filtered
-  list; totals now describe the breeds returned.
-- `rescuedogs_get_adoption_guide` echoed the raw country input even when no
-  guidance matched. It now reports the normalized code, and only when
-  guidance was found.
+- `rescuedogs_list_breeds` printed platform-wide totals above a filtered list,
+  so `breed_group: "Terrier"` showed the whole catalogue's dog count beside
+  three terriers. With `breed_group` or `min_count` set, markdown now leads
+  with the number of breeds and dogs shown, says so when nothing matches, and
+  labels the totals as platform-wide. Structured output reports totals for
+  the returned breeds. `response_format: "json"` text is unchanged.
 
 ### Security
 
