@@ -5,6 +5,48 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-09-22
+
+Tools now return typed, structured results alongside their text, and a round
+of runtime dependency advisories is patched. Text output is unchanged from
+2.0.0.
+
+### Added
+
+- **`outputSchema` and `structuredContent` on all eight tools.** Clients get
+  typed results instead of parsing prose. The text payload of every tool,
+  including `response_format: "json"`, is byte-identical to 2.0.0; only
+  `structuredContent` is new. List tools return a per-dog summary (slug, name,
+  breed, age, sex, size, adoption_url, tagline, energy, experience,
+  organization) in structured output; `rescuedogs_get_dog_details` returns
+  the full record.
+- Structured logs on the HTTP server carry a `level` (`info` for successful
+  tool calls, `warn` for handled tool errors, `error` for thrown handlers and
+  request failures), so hosts that classify stderr as errors no longer flag
+  every call. Thrown handlers now log their error message.
+
+### Fixed
+
+- `AdoptionFees` declared `currency`, `amount` and `notes`; the API returns
+  `currency` and `usual_fee`.
+- `breed_group` was described as FCI groups. The API uses AKC-style values
+  plus two custom ones (Designer/Hybrid, Guardian, Herding, Hound, Mixed,
+  Non-Sporting, Sporting, Terrier, Toy, Working), now listed in the parameter
+  description, so FCI names no longer silently return zero results.
+- `rescuedogs_list_breeds` reported platform-wide totals beside a filtered
+  list; totals now describe the breeds returned.
+- `rescuedogs_get_adoption_guide` echoed the raw country input even when no
+  guidance matched. It now reports the normalized code, and only when
+  guidance was found.
+
+### Security
+
+- fast-uri 3.1.8 (four high-severity SSRF and host-confusion advisories),
+  hono 4.13.8 (three moderate, including `parseBody()` memory exhaustion) and
+  qs 6.16.0 (two moderate). All are transitive, via the MCP SDK and express.
+- The Smithery container moves from Node 20, end of life since 2026-04-30, to
+  Node 22.
+
 ## [2.0.0] - 2026-08-24
 
 The server is now reachable as a remote endpoint at
