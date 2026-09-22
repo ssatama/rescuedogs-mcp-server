@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated: 23 August 2026**
+**Last updated: 22 September 2026**
 
 This policy covers the `rescuedogs-mcp-server` MCP server, both the remote
 endpoint at `https://mcp.rescuedogs.me/mcp` and the npm package that runs locally over stdio.
@@ -23,14 +23,22 @@ The `rescuedogs_match_preferences` tool accepts details about your household
 used only as search filters for that single request.
 
 **Operational logs.** The server writes one line per tool call containing the
-tool name, how long it took, and whether it succeeded. No inputs, results, or
+tool name, how long it took, and whether it succeeded, and one line per
+connection naming the client application and version it reports (for example
+`claude-ai 0.1.0`) and the protocol version it requested. No inputs, results, or
 identifiers are logged.
 
 **Standard web request data.** The remote endpoint sees the IP address of the
-connecting client, as any HTTP service does. It is held in memory only, solely
-to enforce rate limits, and expires within the rate-limit window (at most one
-hour). It is not written to disk, not used to build profiles, and not linked to
-queries.
+connecting client, as any HTTP service does. The server holds it in memory only,
+solely to enforce rate limits, and it expires within the rate-limit window (at
+most one hour). The server does not write it to disk, use it to build profiles,
+or link it to queries.
+
+The hosting provider, [Railway](https://railway.com/legal/privacy), keeps
+standard HTTP access logs for the remote endpoint: IP address, user agent,
+request path, status code, and timing, but not request bodies, so no tool
+inputs. They are kept for Railway's log retention period and used here only
+for operations, such as spotting abuse and errors.
 
 ## What is not collected
 
@@ -50,8 +58,10 @@ happens there and receives nothing back.
 
 ## Retention
 
-Nothing personal is retained. Rate-limit counters live in memory for at most one
-hour and are lost on restart. Operational logs contain no personal data.
+The server retains nothing personal. Rate-limit counters live in memory for at
+most one hour and are lost on restart. Operational logs contain no personal
+data. The hosting provider's access logs, described above, include IP
+addresses and expire under its retention policy.
 
 ## Your controls
 
