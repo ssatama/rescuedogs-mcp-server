@@ -5,6 +5,24 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- The HTTP server logs one `mcp_initialize` line per connection with the
+  client application's self-reported name and version and the protocol
+  version, so usage can be told apart by client (`claude-ai`, `cursor`, and so
+  on). User-Agent can't do this reliably. Values are clipped to 100
+  characters; no inputs or identifiers are logged.
+
+### Changed
+
+- `PRIVACY.md` now lists the client name in operational logs, and discloses
+  that the hosting provider keeps standard HTTP access logs (IP address, user
+  agent, path, status) under its own retention. It previously said the IP
+  address was never written to disk, which was true of the server but not of
+  the hosting provider's logs.
+
 ## [2.1.0] - 2026-09-22
 
 Tools now return typed, structured results alongside their text, and a round
