@@ -31,3 +31,6 @@ docs/
 
 # Package lock - committed for CI reproducibility
 .mcp.json
+
+# Claude Code local config and skills
+.claude/
