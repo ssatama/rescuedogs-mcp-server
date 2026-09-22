@@ -196,7 +196,8 @@ function logClientInfo(server: McpServer, body: unknown): void {
     event: "mcp_initialize",
     client: clip(clientInfo.name),
     client_version: clip(clientInfo.version),
-    protocol_version: clip(initialize?.params?.protocolVersion),
+    // What the client asked for; the SDK falls back to its latest if unsupported.
+    requested_protocol_version: clip(initialize?.params?.protocolVersion),
   });
 }
 

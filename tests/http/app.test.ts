@@ -236,7 +236,7 @@ describe("client info logging", () => {
         client: "some-client",
         client_version: "4.2.0",
       });
-      expect(typeof inits[0]!.protocol_version).toBe("string");
+      expect(typeof inits[0]!.requested_protocol_version).toBe("string");
     } finally {
       spy.mockRestore();
     }
@@ -271,7 +271,7 @@ describe("client info logging", () => {
       const inits = logLines(spy).filter((l) => l.event === "mcp_initialize");
       expect(inits).toHaveLength(1);
       expect(inits[0]!.client).toHaveLength(100);
-      expect(inits[0]!.protocol_version).toBe("2025-06-18");
+      expect(inits[0]!.requested_protocol_version).toBe("2025-06-18");
     } finally {
       spy.mockRestore();
     }
