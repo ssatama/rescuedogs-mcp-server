@@ -171,6 +171,35 @@ function buildLimiters(config: RateLimitOptions | false | undefined) {
   ];
 }
 
+/**
+ * Logs which application is connecting, from the initialize request's
+ * clientInfo (e.g. claude-ai, cursor). User-Agent can't answer this: it names
+ * the HTTP stack or a proxy in front of the client, and is often empty. No
+ * inputs or identifiers are logged, and the strings are client-controlled, so
+ * they are clipped.
+ */
+function logClientInfo(body: unknown): void {
+  const clip = (value: unknown) =>
+    typeof value === "string" ? value.slice(0, 100) : undefined;
+
+  for (const message of Array.isArray(body) ? body : [body]) {
+    if (!message || typeof message !== "object") continue;
+    const { method, params } = message as { method?: unknown; params?: unknown };
+    if (method !== "initialize") continue;
+
+    const { clientInfo, protocolVersion } = (params ?? {}) as {
+      clientInfo?: { name?: unknown; version?: unknown };
+      protocolVersion?: unknown;
+    };
+    log("info", "mcp_initialize", {
+      event: "mcp_initialize",
+      client: clip(clientInfo?.name),
+      client_version: clip(clientInfo?.version),
+      protocol_version: clip(protocolVersion),
+    });
+  }
+}
+
 async function handleMcpRequest(req: Request, res: Response): Promise<void> {
   // Stateless: a fresh server and transport per request. There is no
   // per-user state to keep, and sharing one instance across concurrent
@@ -192,6 +221,8 @@ async function handleMcpRequest(req: Request, res: Response): Promise<void> {
     transport.close().catch(swallow);
     server.close().catch(swallow);
   });
+
+  logClientInfo(req.body);
 
   try {
     await server.connect(transport);

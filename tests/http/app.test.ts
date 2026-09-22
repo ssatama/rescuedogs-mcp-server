@@ -199,6 +199,76 @@ describe("rate limiting", () => {
   });
 });
 
+describe("client info logging", () => {
+  let server: Server;
+  let url: string;
+
+  beforeAll(async () => {
+    ({ server, url } = await listen(createHttpApp({ rateLimit: false })));
+  });
+
+  afterAll(async () => {
+    await close(server);
+  });
+
+  const logLines = (spy: { mock: { calls: unknown[][] } }): Array<Record<string, unknown>> =>
+    spy.mock.calls.flatMap(([line]) => {
+      try {
+        return [JSON.parse(String(line)) as Record<string, unknown>];
+      } catch {
+        return [];
+      }
+    });
+
+  it("logs clientInfo once per initialize, not on other requests", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const client = new Client({ name: "some-client", version: "4.2.0" });
+      await client.connect(new StreamableHTTPClientTransport(new URL(`${url}/mcp`)));
+      await client.listTools();
+      await client.close();
+
+      const inits = logLines(spy).filter((l) => l.event === "mcp_initialize");
+      expect(inits).toHaveLength(1);
+      expect(inits[0]).toMatchObject({
+        level: "info",
+        message: "mcp_initialize",
+        client: "some-client",
+        client_version: "4.2.0",
+      });
+      expect(typeof inits[0]!.protocol_version).toBe("string");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("clips oversized names and ignores non-string fields", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await fetch(`${url}/mcp`, {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "initialize",
+          params: {
+            protocolVersion: "2025-06-18",
+            capabilities: {},
+            clientInfo: { name: "x".repeat(500), version: { nested: true } },
+          },
+        }),
+      });
+
+      const [init] = logLines(spy).filter((l) => l.event === "mcp_initialize");
+      expect(init!.client).toHaveLength(100);
+      expect(init!.client_version).toBeUndefined();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
+
 describe("port resolution", () => {
   it.each([
     ["", 3000],
