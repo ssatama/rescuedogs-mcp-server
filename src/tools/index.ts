@@ -7,6 +7,7 @@ import { registerGetFilterCountsTool } from "./get-filter-counts.js";
 import { registerListOrganizationsTool } from "./list-organizations.js";
 import { registerMatchPreferencesTool } from "./match-preferences.js";
 import { registerGetAdoptionGuideTool } from "./get-adoption-guide.js";
+import { log } from "../log.js";
 
 type ToolResult = {
   content: Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
@@ -33,11 +34,21 @@ export function wrapWithLogging(server: McpServer): McpServer {
         const result = await handler(...handlerArgs);
         const duration_ms = Date.now() - start;
         const status = result.isError ? "error" : "ok";
-        console.error(JSON.stringify({ tool: toolName, duration_ms, status }));
+        // isError is a handled failure reported to the client; a throw is not.
+        log(result.isError ? "warn" : "info", `tool ${toolName} ${status}`, {
+          tool: toolName,
+          duration_ms,
+          status,
+        });
         return result;
       } catch (error) {
         const duration_ms = Date.now() - start;
-        console.error(JSON.stringify({ tool: toolName, duration_ms, status: "error" }));
+        log("error", `tool ${toolName} threw`, {
+          tool: toolName,
+          duration_ms,
+          status: "error",
+          error: error instanceof Error ? error.message : String(error),
+        });
         throw error;
       }
     };

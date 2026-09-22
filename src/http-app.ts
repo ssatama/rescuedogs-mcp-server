@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpServer } from "./server.js";
 import { RATE_LIMITS } from "./constants.js";
+import { log } from "./log.js";
 
 interface RateLimitOptions {
   burst?: number;
@@ -130,12 +131,10 @@ function handleBodyParseError(
     return;
   }
 
-  console.error(
-    JSON.stringify({
-      event: "unhandled_error",
-      message: err instanceof Error ? err.message : String(err),
-    })
-  );
+  log("error", "unhandled_error", {
+    event: "unhandled_error",
+    error: err instanceof Error ? err.message : String(err),
+  });
   res.status(status ?? 500).json(rpcError(-32603, "Internal server error"));
 }
 
@@ -186,12 +185,10 @@ async function handleMcpRequest(req: Request, res: Response): Promise<void> {
   // in-flight request with it.
   res.on("close", () => {
     const swallow = (error: unknown) =>
-      console.error(
-        JSON.stringify({
-          event: "mcp_cleanup_failed",
-          message: error instanceof Error ? error.message : String(error),
-        })
-      );
+      log("error", "mcp_cleanup_failed", {
+        event: "mcp_cleanup_failed",
+        error: error instanceof Error ? error.message : String(error),
+      });
     transport.close().catch(swallow);
     server.close().catch(swallow);
   });
@@ -200,12 +197,10 @@ async function handleMcpRequest(req: Request, res: Response): Promise<void> {
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        event: "mcp_request_failed",
-        message: error instanceof Error ? error.message : String(error),
-      })
-    );
+    log("error", "mcp_request_failed", {
+      event: "mcp_request_failed",
+      error: error instanceof Error ? error.message : String(error),
+    });
     if (!res.headersSent) {
       res.status(500).json({
         jsonrpc: "2.0",
