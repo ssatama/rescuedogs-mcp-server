@@ -242,27 +242,58 @@ describe("client info logging", () => {
     }
   });
 
-  it("clips oversized names and ignores non-string fields", async () => {
+  const post = (body: unknown, accept = "application/json, text/event-stream") =>
+    fetch(`${url}/mcp`, {
+      method: "POST",
+      headers: { "content-type": "application/json", accept },
+      body: JSON.stringify(body),
+    }).then(async (res) => {
+      await res.text();
+      return res.status;
+    });
+
+  const initialize = (id: number, name: string) => ({
+    jsonrpc: "2.0",
+    id,
+    method: "initialize",
+    params: {
+      protocolVersion: "2025-06-18",
+      capabilities: {},
+      clientInfo: { name, version: "1.0.0" },
+    },
+  });
+
+  it("clips oversized client names", async () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      await fetch(`${url}/mcp`, {
-        method: "POST",
-        headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "initialize",
-          params: {
-            protocolVersion: "2025-06-18",
-            capabilities: {},
-            clientInfo: { name: "x".repeat(500), version: { nested: true } },
-          },
-        }),
+      expect(await post(initialize(1, "x".repeat(500)))).toBe(200);
+
+      const inits = logLines(spy).filter((l) => l.event === "mcp_initialize");
+      expect(inits).toHaveLength(1);
+      expect(inits[0]!.client).toHaveLength(100);
+      expect(inits[0]!.protocol_version).toBe("2025-06-18");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("logs nothing for initialize requests the transport rejects", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      // Several initializes in one batch: the SDK allows only one.
+      const batch = Array.from({ length: 50 }, (_, i) => initialize(i, "flood"));
+      expect(await post(batch)).toBe(400);
+      // Unacceptable Accept header.
+      expect(await post(initialize(1, "wrong-accept"), "text/html")).toBe(406);
+      // Invalid params: clientInfo.version must be a string.
+      await post({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "bad" } },
       });
 
-      const [init] = logLines(spy).filter((l) => l.event === "mcp_initialize");
-      expect(init!.client).toHaveLength(100);
-      expect(init!.client_version).toBeUndefined();
+      expect(logLines(spy).filter((l) => l.event === "mcp_initialize")).toHaveLength(0);
     } finally {
       spy.mockRestore();
     }

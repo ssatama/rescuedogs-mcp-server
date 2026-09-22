@@ -7,6 +7,7 @@ import express, {
 } from "express";
 import rateLimit from "express-rate-limit";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createMcpServer } from "./server.js";
 import { RATE_LIMITS } from "./constants.js";
 import { log } from "./log.js";
@@ -172,32 +173,31 @@ function buildLimiters(config: RateLimitOptions | false | undefined) {
 }
 
 /**
- * Logs which application is connecting, from the initialize request's
- * clientInfo (e.g. claude-ai, cursor). User-Agent can't answer this: it names
- * the HTTP stack or a proxy in front of the client, and is often empty. No
- * inputs or identifiers are logged, and the strings are client-controlled, so
- * they are clipped.
+ * Logs which application connected, from the clientInfo of an initialize
+ * request the SDK accepted (e.g. claude-ai, cursor). User-Agent can't answer
+ * this: it names the HTTP stack or a proxy in front of the client, and is
+ * often empty. Reading it back from the server, rather than from the raw body,
+ * means rejected requests (bad Accept, invalid params, batches with several
+ * initializes) log nothing and a request logs at most once. The strings are
+ * client-controlled, so they are clipped.
  */
-function logClientInfo(body: unknown): void {
+function logClientInfo(server: McpServer, body: unknown): void {
+  const clientInfo = server.server.getClientVersion();
+  if (!clientInfo) return;
+
   const clip = (value: unknown) =>
     typeof value === "string" ? value.slice(0, 100) : undefined;
+  const initialize = (Array.isArray(body) ? body : [body]).find(
+    (message: unknown) =>
+      (message as { method?: unknown } | null)?.method === "initialize"
+  ) as { params?: { protocolVersion?: unknown } } | undefined;
 
-  for (const message of Array.isArray(body) ? body : [body]) {
-    if (!message || typeof message !== "object") continue;
-    const { method, params } = message as { method?: unknown; params?: unknown };
-    if (method !== "initialize") continue;
-
-    const { clientInfo, protocolVersion } = (params ?? {}) as {
-      clientInfo?: { name?: unknown; version?: unknown };
-      protocolVersion?: unknown;
-    };
-    log("info", "mcp_initialize", {
-      event: "mcp_initialize",
-      client: clip(clientInfo?.name),
-      client_version: clip(clientInfo?.version),
-      protocol_version: clip(protocolVersion),
-    });
-  }
+  log("info", "mcp_initialize", {
+    event: "mcp_initialize",
+    client: clip(clientInfo.name),
+    client_version: clip(clientInfo.version),
+    protocol_version: clip(initialize?.params?.protocolVersion),
+  });
 }
 
 async function handleMcpRequest(req: Request, res: Response): Promise<void> {
@@ -213,6 +213,7 @@ async function handleMcpRequest(req: Request, res: Response): Promise<void> {
   // would terminate the process under Node's default settings, taking every
   // in-flight request with it.
   res.on("close", () => {
+    logClientInfo(server, req.body);
     const swallow = (error: unknown) =>
       log("error", "mcp_cleanup_failed", {
         event: "mcp_cleanup_failed",
@@ -221,8 +222,6 @@ async function handleMcpRequest(req: Request, res: Response): Promise<void> {
     transport.close().catch(swallow);
     server.close().catch(swallow);
   });
-
-  logClientInfo(req.body);
 
   try {
     await server.connect(transport);

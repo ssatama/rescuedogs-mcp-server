@@ -12,8 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The HTTP server logs one `mcp_initialize` line per connection with the
   client application's self-reported name and version and the protocol
   version, so usage can be told apart by client (`claude-ai`, `cursor`, and so
-  on). User-Agent can't do this reliably. Values are clipped to 100
-  characters; no inputs or identifiers are logged.
+  on). User-Agent can't do this reliably. Only initializes the SDK accepts are
+  logged, at most once per request, with values clipped to 100 characters; no
+  inputs or identifiers are logged.
 
 ### Changed
 
