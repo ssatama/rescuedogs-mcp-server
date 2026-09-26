@@ -11,9 +11,20 @@
 
 MCP server for discovering rescue dogs from European and UK organizations. Search, filter, and get detailed profiles of dogs available for adoption.
 
+Listed in the [Claude Connectors Directory](https://claude.ai/directory/connectors/rescue-dogs).
+
+**Run a rescue or shelter?** [FOR-RESCUES.md](FOR-RESCUES.md) shows how to
+publish your own animals the same way, with a working example server.
+
 ## Connect
 
-### Remote (recommended)
+### Claude
+
+Enable **Rescue Dogs** from the
+[Connectors Directory](https://claude.ai/directory/connectors/rescue-dogs). No
+account or setup needed.
+
+### Remote (any MCP client)
 
 No install. Add the endpoint as a custom connector or remote MCP server:
 
