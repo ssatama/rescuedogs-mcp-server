@@ -126,12 +126,33 @@ app.post("/mcp", express.json(), async (req, res) => {
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });
+  // An unhandled rejection here would crash the whole process.
   res.on("close", () => {
-    void transport.close();
-    void server.close();
+    transport.close().catch(console.error);
+    server.close().catch(console.error);
   });
-  await server.connect(transport);
-  await transport.handleRequest(req, res, req.body);
+  try {
+    await server.connect(transport);
+    await transport.handleRequest(req, res, req.body);
+  } catch (error) {
+    console.error(error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        jsonrpc: "2.0",
+        error: { code: -32603, message: "Internal server error" },
+        id: null,
+      });
+    }
+  }
+});
+// MCP clients probe GET /mcp for a stream. 405 tells them there isn't one;
+// Express's default 404 would surface as a transport error instead.
+app.all("/mcp", (_req, res) => {
+  res.set("Allow", "POST").status(405).json({
+    jsonrpc: "2.0",
+    error: { code: -32000, message: "Method not allowed. Use POST." },
+    id: null,
+  });
 });
 app.listen(Number(process.env.PORT ?? 3000));
 ```
