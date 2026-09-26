@@ -41,6 +41,7 @@ export function registerSearchDogsTool(server: McpServer): void {
       inputSchema: SearchDogsInputSchema.shape,
       outputSchema: SearchDogsOutputShape,
       annotations: {
+        title: "Search rescue dogs",
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,

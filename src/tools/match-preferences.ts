@@ -22,6 +22,7 @@ export function registerMatchPreferencesTool(server: McpServer): void {
       inputSchema: MatchPreferencesInputSchema.shape,
       outputSchema: MatchPreferencesOutputShape,
       annotations: {
+        title: "Match dogs to lifestyle",
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,

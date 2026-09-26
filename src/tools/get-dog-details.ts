@@ -16,6 +16,7 @@ export function registerGetDogDetailsTool(server: McpServer): void {
       inputSchema: GetDogDetailsInputSchema.shape,
       outputSchema: GetDogDetailsOutputShape,
       annotations: {
+        title: "Get dog details",
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,

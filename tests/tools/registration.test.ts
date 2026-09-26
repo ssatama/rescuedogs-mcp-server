@@ -34,6 +34,8 @@ describe("tool registration metadata", () => {
     const title = mock.getConfig(name).title;
     expect(title).toBeTruthy();
     expect(title).not.toBe(name);
+    // Anthropic's directory portal reads the title from annotations.
+    expect(mock.getConfig(name).annotations?.title).toBe(title);
   });
 
   it.each(EXPECTED)("%s describes when to use it", (name) => {

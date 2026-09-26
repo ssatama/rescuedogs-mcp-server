@@ -14,6 +14,7 @@ export function registerGetStatisticsTool(server: McpServer): void {
       inputSchema: GetStatisticsInputSchema.shape,
       outputSchema: GetStatisticsOutputShape,
       annotations: {
+        title: "Get platform statistics",
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
