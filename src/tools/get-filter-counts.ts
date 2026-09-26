@@ -19,6 +19,7 @@ export function registerGetFilterCountsTool(server: McpServer): void {
       inputSchema: GetFilterCountsInputSchema.shape,
       outputSchema: GetFilterCountsOutputShape,
       annotations: {
+        title: "Get filter options",
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,

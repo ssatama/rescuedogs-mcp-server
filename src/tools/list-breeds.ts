@@ -14,6 +14,7 @@ export function registerListBreedsTool(server: McpServer): void {
       inputSchema: ListBreedsInputSchema.shape,
       outputSchema: ListBreedsOutputShape,
       annotations: {
+        title: "List available breeds",
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,

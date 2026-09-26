@@ -16,6 +16,7 @@ export function registerListOrganizationsTool(server: McpServer): void {
       inputSchema: ListOrganizationsInputSchema.shape,
       outputSchema: ListOrganizationsOutputShape,
       annotations: {
+        title: "List rescue organizations",
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,

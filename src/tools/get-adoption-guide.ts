@@ -15,6 +15,7 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
       inputSchema: GetAdoptionGuideInputSchema.shape,
       outputSchema: GetAdoptionGuideOutputShape,
       annotations: {
+        title: "Get adoption guide",
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
