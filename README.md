@@ -71,7 +71,8 @@ Search for rescue dogs with comprehensive filtering.
 - `query` - Free-text search
 - `breed` - Filter by breed name
 - `breed_group` - Filter by breed group: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working
-- `size` - Small, Medium, Large, XLarge (also accepted as Giant, its label). Tiny is searched as Small
+- `size` - Small, Medium, Large. Giant breeds are listed as Large; XLarge (also
+  accepted as Giant) is rarely used. Tiny is searched as Small
 - `age_category` - puppy, young, adult, senior. Matches only dogs with a recorded age
 - `sex` - male, female
 - `energy_level` - low, medium, high (also matches very_high), very_high
@@ -98,7 +99,7 @@ Get full details for a specific dog including AI-generated personality profile.
 **Parameters:**
 - `slug` - Dog's URL slug (required)
 - `include_image` - Include photo (default: true)
-- `include_gallery` - Include up to 5 photos from the dog's gallery instead
+- `include_gallery` - With `include_image`, embed up to 5 photos from the dog's gallery instead
   (default: false). Every photo URL is listed either way
 - `image_preset` - `thumbnail` or `medium` (default)
 - `response_format` - `markdown` (default) or `json`

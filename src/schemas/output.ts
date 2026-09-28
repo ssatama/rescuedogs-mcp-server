@@ -81,7 +81,7 @@ const DogSchema = z.object({
     .array(z.string())
     .optional()
     .describe(
-      "The dog's photos in the rescue's order: all of them from rescuedogs_get_dog_details, the first 3 in list results"
+      "Every photo of the dog, in the rescue's order"
     ),
   profile: ProfileSchema.optional(),
   organization: OrganizationSchema.optional(),

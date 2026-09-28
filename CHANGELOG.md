@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`photo_urls` in structured output, a Photos section in markdown; list
   results in `json` carry the first three), and
   `include_gallery: true` embeds up to five of them instead of the main photo
-  alone.
+  alone (`include_image: false` still embeds none).
 - **Lifestyle counts.** `rescuedogs_get_filter_counts` returns `total`, the
   number of dogs matching the current filters, and `lifestyle`: how many are
   good with children, dogs and cats, suit first-time owners, and have low,
@@ -39,7 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **One size scale.** The API folded Tiny into Small; `size: "Tiny"` now
   searches Small (a Tiny filter alone matched 8 dogs). Output reports Tiny dogs
   as Small, markdown labels XLarge as Giant, as the site does, and `size`
-  accepts `Giant`.
+  accepts `Giant`. The `size` description now says giant breeds are listed as
+  Large: no dog is stored as XLarge today.
 - **High energy includes very_high.** `energy_level: "high"` on
   `rescuedogs_search_dogs`, and `activity_level: "active"` on
   `rescuedogs_match_preferences`, ask for the API's high energy band (430 dogs

@@ -84,6 +84,21 @@ describe("rescuedogs_get_dog_details handler", () => {
     ]);
   });
 
+  it("embeds no photos when include_image is false, even with include_gallery", async () => {
+    vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
+
+    const handler = getHandler("rescuedogs_get_dog_details");
+    const result = await handler({
+      slug: "buddy-golden-retriever",
+      include_image: false,
+      include_gallery: true,
+    });
+
+    expect(fetchDogImages).not.toHaveBeenCalled();
+    expect(fetchDogImage).not.toHaveBeenCalled();
+    expect(result.content.map((c) => c.type)).toEqual(["text"]);
+  });
+
   it("falls back to the main photo for include_gallery when the API sends no gallery", async () => {
     vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
     vi.mocked(fetchDogImages).mockResolvedValue([mockImageContent]);

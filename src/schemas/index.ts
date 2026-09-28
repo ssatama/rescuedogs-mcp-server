@@ -41,7 +41,7 @@ export const SearchDogsInputSchema = z
         "Filter by breed group. Valid values: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working. These are not FCI groups - an FCI group name matches nothing."
       ),
     size: SizeEnum.optional().describe(
-      "Filter by size: Small, Medium, Large or XLarge (also accepted as Giant, its label). Tiny is searched as Small."
+      "Filter by size: Small, Medium or Large. Giant breeds are listed as Large; XLarge (also accepted as Giant) is rarely used, so check rescuedogs_get_filter_counts before relying on it. Tiny is searched as Small."
     ),
     age_category: AgeCategoryEnum.optional().describe(
       "Filter by age category: puppy (0-12 months), young (1-3 years), adult (3-8 years), senior (8+ years)"
@@ -118,7 +118,7 @@ export const GetDogDetailsInputSchema = z
     include_gallery: z
       .boolean()
       .default(false)
-      .describe("Include up to 5 photos from the dog's gallery instead of the main photo alone (larger response)"),
+      .describe("With include_image, embed up to 5 photos from the dog's gallery instead of the main photo alone (larger response)"),
     image_preset: ImagePresetEnum.default("medium").describe(
       "Image size preset: 'thumbnail' (200x200) or 'medium' (400x400)"
     ),

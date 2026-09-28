@@ -47,8 +47,8 @@ export function registerGetDogDetailsTool(server: McpServer): void {
           | { type: "image"; data: string; mimeType: "image/jpeg" }
         > = [];
 
-        // Add images first if requested
-        if (parsed.include_gallery) {
+        // Add images first if requested; include_image: false means none
+        if (parsed.include_image && parsed.include_gallery) {
           const urls = dog.images?.length
             ? dog.images.map((image) => image.url)
             : [dog.primary_image_url];
