@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Photo galleries.** `rescuedogs_get_dog_details` returns every photo URL
-  (`photo_urls` in structured output, a Photos section in markdown), and
+  (`photo_urls` in structured output, a Photos section in markdown; list
+  results in `json` carry the first three), and
   `include_gallery: true` embeds up to five of them instead of the main photo
   alone.
 - **Lifestyle counts.** `rescuedogs_get_filter_counts` returns `total`, the
@@ -37,10 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   now send `age_known=true`.
 - **One size scale.** The API folded Tiny into Small; `size: "Tiny"` now
   searches Small (a Tiny filter alone matched 8 dogs). Output reports Tiny dogs
-  as Small, and markdown labels XLarge as Giant, as the site does.
-- **`rescuedogs_match_preferences` with `activity_level: "active"`** asks for
-  the API's high energy band, which includes very_high dogs (430 dogs rather
-  than 392).
+  as Small, markdown labels XLarge as Giant, as the site does, and `size`
+  accepts `Giant`.
+- **High energy includes very_high.** `energy_level: "high"` on
+  `rescuedogs_search_dogs`, and `activity_level: "active"` on
+  `rescuedogs_match_preferences`, ask for the API's high energy band (430 dogs
+  rather than 392), matching the filter counts' high energy figure.
 
 - `PRIVACY.md` now lists the client name in operational logs, and discloses
   that the hosting provider keeps standard HTTP access logs (IP address, user

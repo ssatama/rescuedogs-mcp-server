@@ -144,7 +144,7 @@ describe("live API contract", () => {
       const puppies = await apiClient.searchDogs({ age_category: "Puppy", limit: 100 });
       expect(puppies.length).toBeGreaterThan(0);
       for (const dog of puppies) {
-        expect(dog.age_min_months ?? dog.age_max_months).not.toBeNull();
+        expect(typeof (dog.age_min_months ?? dog.age_max_months)).toBe("number");
       }
     },
     TIMEOUT

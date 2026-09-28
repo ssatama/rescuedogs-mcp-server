@@ -169,8 +169,9 @@ export function formatDogMarkdown(dog: Dog): string {
     formatProfileSections(profile, parts);
   }
 
-  // One photo is the hero the image content already shows
-  if (dog.images && dog.images.length > 1) {
+  // Listed even when the image content shows one: include_image may be off,
+  // or the fetch may have failed
+  if (dog.images && dog.images.length > 0) {
     parts.push(`## Photos (${dog.images.length})`);
     parts.push("");
     parts.push(dog.images.map((image) => `- ${image.url}`).join("\n"));

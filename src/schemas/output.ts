@@ -80,7 +80,9 @@ const DogSchema = z.object({
   photo_urls: z
     .array(z.string())
     .optional()
-    .describe("Every photo of the dog, in the rescue's order"),
+    .describe(
+      "The dog's photos in the rescue's order: all of them from rescuedogs_get_dog_details, the first 3 in list results"
+    ),
   profile: ProfileSchema.optional(),
   organization: OrganizationSchema.optional(),
 });

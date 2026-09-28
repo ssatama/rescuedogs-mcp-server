@@ -71,10 +71,10 @@ Search for rescue dogs with comprehensive filtering.
 - `query` - Free-text search
 - `breed` - Filter by breed name
 - `breed_group` - Filter by breed group: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working
-- `size` - Small, Medium, Large, XLarge (shown as Giant). Tiny is searched as Small
+- `size` - Small, Medium, Large, XLarge (also accepted as Giant, its label). Tiny is searched as Small
 - `age_category` - puppy, young, adult, senior. Matches only dogs with a recorded age
 - `sex` - male, female
-- `energy_level` - low, medium, high, very_high
+- `energy_level` - low, medium, high (also matches very_high), very_high
 - `experience_level` - first_time_ok, some_experience, experienced_only
 - `home_type` - apartment_ok, house_preferred, house_required
 - `adoptable_to_country` - ISO country code (GB, IE, FR, DE)

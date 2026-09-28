@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const SizeEnum = z.enum(["Tiny", "Small", "Medium", "Large", "XLarge"]);
+const SizeEnum = z.enum(["Tiny", "Small", "Medium", "Large", "XLarge", "Giant"]);
 const AgeCategoryEnum = z.enum(["puppy", "young", "adult", "senior"]);
 const SortEnum = z.enum([
   "recommended",
@@ -41,14 +41,14 @@ export const SearchDogsInputSchema = z
         "Filter by breed group. Valid values: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working. These are not FCI groups - an FCI group name matches nothing."
       ),
     size: SizeEnum.optional().describe(
-      "Filter by size: Small, Medium, Large or XLarge (shown as Giant). Tiny is searched as Small."
+      "Filter by size: Small, Medium, Large or XLarge (also accepted as Giant, its label). Tiny is searched as Small."
     ),
     age_category: AgeCategoryEnum.optional().describe(
       "Filter by age category: puppy (0-12 months), young (1-3 years), adult (3-8 years), senior (8+ years)"
     ),
     sex: SexEnum.optional().describe("Filter by sex"),
     energy_level: EnergyLevelEnum.optional().describe(
-      "Filter by energy level from LLM profiler data"
+      "Filter by energy level from LLM profiler data; high also matches very_high dogs"
     ),
     experience_level: ExperienceLevelEnum.optional().describe(
       "Filter by required owner experience level"

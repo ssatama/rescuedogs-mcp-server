@@ -120,12 +120,14 @@ describe("formatDogMarkdown", () => {
     expect(result).toContain("- https://images.rescuedogs.me/dogs/buddy-2.jpg");
   });
 
-  it("adds no photo section for a single photo", () => {
+  // include_image may be false, or the fetch may fail: the URL is the fallback
+  it("lists a single photo too", () => {
     const result = formatDogMarkdown({
       ...mockDog,
       images: [{ url: "https://images.rescuedogs.me/dogs/buddy.jpg" }],
     });
-    expect(result).not.toContain("## Photos");
+    expect(result).toContain("## Photos (1)");
+    expect(result).toContain("- https://images.rescuedogs.me/dogs/buddy.jpg");
   });
 
   it("labels sizes as the site does: XLarge is Giant, Tiny is Small", () => {

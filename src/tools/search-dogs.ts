@@ -11,8 +11,9 @@ import {
   AGE_CATEGORY_MAP,
   SEX_MAP,
   SORT_MAP,
+  energyFilter,
   normalizeCountryForApi,
-  normalizeSizeForApi,
+  normalizeSize,
 } from "../utils/mappings.js";
 import { DISPLAY_LIMITS } from "../constants.js";
 
@@ -89,10 +90,10 @@ export function registerSearchDogsTool(server: McpServer): void {
           search: searchQuery,
           breed: parsed.breed,
           breed_group: parsed.breed_group,
-          standardized_size: normalizeSizeForApi(parsed.size),
+          standardized_size: normalizeSize(parsed.size),
           age_category: mappedAgeCategory,
           sex: parsed.sex ? SEX_MAP[parsed.sex] : undefined,
-          energy_level: parsed.energy_level,
+          ...energyFilter(parsed.energy_level),
           home_type: parsed.home_type,
           experience_level: parsed.experience_level,
           available_to_country: normalizeCountryForApi(

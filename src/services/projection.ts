@@ -5,7 +5,7 @@ import type {
   DogProfilerData,
   Organization,
 } from "../types.js";
-import { normalizeSizeForApi } from "../utils/mappings.js";
+import { normalizeSize } from "../utils/mappings.js";
 
 /**
  * Allowlisted views of the API records.
@@ -122,7 +122,7 @@ export function toPublicDog(dog: Dog): PublicDog {
       age_min_months: dog.age_min_months ?? undefined,
       age_max_months: dog.age_max_months ?? undefined,
       sex: dog.sex ?? undefined,
-      size: normalizeSizeForApi(dog.standardized_size ?? dog.size ?? undefined),
+      size: normalizeSize(dog.standardized_size ?? dog.size ?? undefined),
       primary_image_url: dog.primary_image_url ?? undefined,
       photo_urls: dog.images?.map((image) => image.url),
       profile: dog.dog_profiler_data
@@ -167,7 +167,7 @@ export function toPublicDogSummary(dog: Dog): PublicDogSummary {
       breed: dog.standardized_breed ?? dog.breed ?? undefined,
       age_text: dog.age_text ?? undefined,
       sex: dog.sex ?? undefined,
-      size: normalizeSizeForApi(dog.standardized_size ?? dog.size ?? undefined),
+      size: normalizeSize(dog.standardized_size ?? dog.size ?? undefined),
       tagline: profile?.tagline ?? undefined,
       energy_level: profile?.energy_level ?? undefined,
       experience_level: profile?.experience_level ?? undefined,
