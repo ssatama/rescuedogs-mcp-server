@@ -1,11 +1,12 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiClient } from "../services/api-client.js";
 import { formatDogMarkdown } from "../services/formatters.js";
-import { fetchDogImage } from "../services/image-service.js";
+import { fetchDogImage, fetchDogImages } from "../services/image-service.js";
 import { toPublicDog } from "../services/projection.js";
 import { GetDogDetailsInputSchema } from "../schemas/index.js";
 import { GetDogDetailsOutputShape } from "../schemas/output.js";
 import type { ImagePreset } from "../types.js";
+import { DISPLAY_LIMITS } from "../constants.js";
 
 export function registerGetDogDetailsTool(server: McpServer): void {
   server.registerTool(
@@ -46,8 +47,19 @@ export function registerGetDogDetailsTool(server: McpServer): void {
           | { type: "image"; data: string; mimeType: "image/jpeg" }
         > = [];
 
-        // Add image first if requested
-        if (parsed.include_image) {
+        // Add images first if requested
+        if (parsed.include_gallery) {
+          const urls = dog.images?.length
+            ? dog.images.map((image) => image.url)
+            : [dog.primary_image_url];
+          const images = await fetchDogImages(
+            urls.slice(0, DISPLAY_LIMITS.MAX_IMAGES),
+            parsed.image_preset as ImagePreset
+          );
+          for (const image of images) {
+            if (image) content.push(image);
+          }
+        } else if (parsed.include_image) {
           const image = await fetchDogImage(
             dog.primary_image_url,
             parsed.image_preset as ImagePreset

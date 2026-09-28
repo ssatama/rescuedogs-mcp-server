@@ -12,6 +12,30 @@ export const SEX_MAP: Record<string, string> = {
   female: "Female",
 };
 
+// The API has one size scale, Small to XLarge (shown as Giant): it folded Tiny
+// into Small, and a Tiny filter alone matches only the few dogs still stored so.
+export function normalizeSizeForApi(
+  size: string | undefined
+): string | undefined {
+  return size === "Tiny" ? "Small" : size;
+}
+
+// The site's size labels: Tiny is shown as Small and XLarge as Giant
+export function sizeLabel(size: string): string {
+  if (size === "Tiny") return "Small";
+  if (size === "XLarge") return "Giant";
+  return size;
+}
+
+// Sort mapping: MCP uses plain names, backend expects its sort keys
+export const SORT_MAP: Record<string, string> = {
+  recommended: "recommended",
+  newest: "newest",
+  waiting_longest: "oldest",
+  youngest: "age-asc",
+  oldest: "age-desc",
+};
+
 // Preference mappings: MCP uses user-friendly values, backend expects internal values
 export const HOME_TYPE_MAP: Record<string, string> = {
   apartment: "apartment_ok",

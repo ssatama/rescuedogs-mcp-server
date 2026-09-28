@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toPublicDog, toPublicOrganization } from "../../src/services/projection.js";
+import { toPublicDog, toPublicDogSummary, toPublicOrganization } from "../../src/services/projection.js";
 import { mockDog, mockDogMinimal, mockOrganization } from "../fixtures/dogs.js";
 
 /**
@@ -98,6 +98,30 @@ describe("toPublicDog", () => {
     });
     expect(dog.breed).toBe("Standard Breed");
     expect(dog.size).toBe("Medium");
+  });
+
+  it("reports Tiny as Small, the one size scale search accepts", () => {
+    expect(toPublicDog({ ...mockDog, standardized_size: "Tiny" }).size).toBe("Small");
+    expect(toPublicDogSummary({ ...mockDog, standardized_size: "Tiny" }).size).toBe("Small");
+  });
+
+  it("lists the photo gallery's URLs in the rescue's order", () => {
+    const dog = toPublicDog({
+      ...mockDog,
+      images: [
+      { url: "https://images.rescuedogs.me/dogs/buddy.jpg", width: 800, height: 600 },
+      { url: "https://images.rescuedogs.me/dogs/buddy-2.jpg", width: null, height: null },
+    ],
+    });
+    expect(dog.photo_urls).toEqual([
+      "https://images.rescuedogs.me/dogs/buddy.jpg",
+      "https://images.rescuedogs.me/dogs/buddy-2.jpg",
+    ]);
+  });
+
+  it("omits photo_urls when the API sends no gallery", () => {
+    expect(toPublicDog({ ...mockDog, images: [] })).not.toHaveProperty("photo_urls");
+    expect(toPublicDog(mockDogMinimal)).not.toHaveProperty("photo_urls");
   });
 
   it("falls back to raw breed and size when unstandardized", () => {

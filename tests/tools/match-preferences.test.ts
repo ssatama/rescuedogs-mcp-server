@@ -65,6 +65,18 @@ describe("rescuedogs_match_preferences handler", () => {
     );
   });
 
+  // An active owner suits a very_high dog too; energy_level=high left those out
+  it('asks for the "high" energy band, which includes very_high, when activity_level is "active"', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
+
+    const handler = getHandler("rescuedogs_match_preferences");
+    await handler({ ...baseInput, activity_level: "active" });
+
+    const params = vi.mocked(apiClient.searchDogs).mock.calls[0]![0];
+    expect(params.energy).toBe("high");
+    expect(params.energy_level).toBeUndefined();
+  });
+
   it('maps experience "first_time" to experience_level "first_time_ok"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
 

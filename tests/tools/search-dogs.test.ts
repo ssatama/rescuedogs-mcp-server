@@ -63,6 +63,40 @@ describe("rescuedogs_search_dogs handler", () => {
     );
   });
 
+  // The API folded Tiny into Small; a Tiny filter alone matched 8 dogs
+  it('searches "Tiny" as "Small", the one size scale the API uses', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ size: "Tiny" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ standardized_size: "Small" })
+    );
+  });
+
+  it('maps sort "waiting_longest" to the API\'s "oldest"', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ sort: "waiting_longest" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: "oldest" })
+    );
+  });
+
+  it('maps sort "youngest" to "age-asc"', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ sort: "youngest" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: "age-asc" })
+    );
+  });
+
   it('maps sex "male" to "Male"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
 

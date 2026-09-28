@@ -8,6 +8,7 @@ import {
   AGE_CATEGORY_MAP,
   SEX_MAP,
   normalizeCountryForApi,
+  normalizeSizeForApi,
 } from "../utils/mappings.js";
 
 export function registerGetFilterCountsTool(server: McpServer): void {
@@ -15,7 +16,7 @@ export function registerGetFilterCountsTool(server: McpServer): void {
     "rescuedogs_get_filter_counts",
     {
       title: "Get filter options",
-      description: "Get available filter options with counts based on current filter context. Use this to show users valid filter choices that won't result in empty searches.",
+      description: "Get available filter options with counts based on current filter context, plus the number of matching dogs and how many are good with children, dogs or cats, suit first-time owners, or have low, medium or high energy. Use this to show users valid filter choices that won't result in empty searches.",
       inputSchema: GetFilterCountsInputSchema.shape,
       outputSchema: GetFilterCountsOutputShape,
       annotations: {
@@ -34,7 +35,7 @@ export function registerGetFilterCountsTool(server: McpServer): void {
         const raw = parsed.current_filters || {};
         const normalized: Record<string, unknown> = {
           ...(raw.breed && { breed: raw.breed }),
-          ...(raw.size && { size: raw.size }),
+          ...(raw.size && { size: normalizeSizeForApi(raw.size) }),
           ...(raw.age_category && {
             age_category: AGE_CATEGORY_MAP[raw.age_category],
           }),
@@ -44,6 +45,9 @@ export function registerGetFilterCountsTool(server: McpServer): void {
               raw.adoptable_to_country
             ),
           }),
+          ...(raw.good_with_kids && { good_with_kids: true }),
+          ...(raw.good_with_dogs && { good_with_dogs: true }),
+          ...(raw.good_with_cats && { good_with_cats: true }),
         };
         const filterHash = JSON.stringify(
           Object.keys(normalized)
@@ -61,7 +65,7 @@ export function registerGetFilterCountsTool(server: McpServer): void {
         if (!counts) {
           counts = await apiClient.getFilterCounts({
             breed: parsed.current_filters?.breed,
-            standardized_size: parsed.current_filters?.size,
+            standardized_size: normalizeSizeForApi(parsed.current_filters?.size),
             age_category: parsed.current_filters?.age_category
               ? AGE_CATEGORY_MAP[parsed.current_filters.age_category]
               : undefined,
@@ -71,12 +75,17 @@ export function registerGetFilterCountsTool(server: McpServer): void {
             available_to_country: normalizeCountryForApi(
               parsed.current_filters?.adoptable_to_country
             ),
+            good_with_kids: raw.good_with_kids,
+            good_with_dogs: raw.good_with_dogs,
+            good_with_cats: raw.good_with_cats,
           });
           cacheService.setFilterCounts(filterHash, counts);
         }
 
         // Countries sorted by count so the most useful choices come first
         const structured = {
+          ...(counts.total !== undefined && { total: counts.total }),
+          ...(counts.lifestyle && { lifestyle: counts.lifestyle }),
           size_options: counts.size_options,
           age_options: counts.age_options,
           sex_options: counts.sex_options,

@@ -8,7 +8,9 @@ import type {
   QualifyingBreed,
   Statistics,
   FilterCountsResponse,
+  LifestyleCounts,
 } from "../types.js";
+import { sizeLabel } from "../utils/mappings.js";
 
 // Formats the AI profiler block that the API returns inline on every animal.
 function formatProfileSections(data: DogProfilerData, parts: string[]): void {
@@ -156,7 +158,7 @@ export function formatDogMarkdown(dog: Dog): string {
     parts.push(`- **Sex:** ${dog.sex}`);
   }
   if (dog.standardized_size || dog.size) {
-    parts.push(`- **Size:** ${dog.standardized_size || dog.size}`);
+    parts.push(`- **Size:** ${sizeLabel(dog.standardized_size || dog.size!)}`);
   }
   if (dog.breed_group) {
     parts.push(`- **Breed Group:** ${dog.breed_group}`);
@@ -165,6 +167,14 @@ export function formatDogMarkdown(dog: Dog): string {
 
   if (profile) {
     formatProfileSections(profile, parts);
+  }
+
+  // One photo is the hero the image content already shows
+  if (dog.images && dog.images.length > 1) {
+    parts.push(`## Photos (${dog.images.length})`);
+    parts.push("");
+    parts.push(dog.images.map((image) => `- ${image.url}`).join("\n"));
+    parts.push("");
   }
 
   // Organization info
@@ -225,7 +235,7 @@ No dogs found matching your criteria.
     }
     if (dog.age_text) details.push(`**Age:** ${dog.age_text}`);
     if (dog.sex) details.push(`**Sex:** ${dog.sex}`);
-    if (dog.standardized_size) details.push(`**Size:** ${dog.standardized_size}`);
+    if (dog.standardized_size) details.push(`**Size:** ${sizeLabel(dog.standardized_size)}`);
 
     parts.push(details.join(" | "));
     parts.push("");
@@ -422,11 +432,27 @@ export function formatStatisticsMarkdown(stats: Statistics): string {
   return parts.join("\n");
 }
 
+// A count is a yes the profile records; "known" is how many profiles answer
+// at all, so a low count over a low known reads as missing data, not a no.
+const LIFESTYLE_LABELS: ReadonlyArray<[keyof LifestyleCounts, string]> = [
+  ["good_with_kids", "Good with children"],
+  ["good_with_dogs", "Good with dogs"],
+  ["good_with_cats", "Good with cats"],
+  ["first_time_friendly", "Suits first-time owners"],
+  ["energy_low", "Low energy"],
+  ["energy_medium", "Medium energy"],
+  ["energy_high", "High energy"],
+];
+
 export function formatFilterCountsMarkdown(counts: FilterCountsResponse): string {
   const parts: string[] = [];
 
   parts.push("# Available Filter Options");
   parts.push("");
+  if (counts.total !== undefined) {
+    parts.push(`**Matching dogs:** ${counts.total}`);
+    parts.push("");
+  }
 
   if (counts.size_options.length > 0) {
     parts.push("## Size");
@@ -464,6 +490,15 @@ export function formatFilterCountsMarkdown(counts: FilterCountsResponse): string
     }
     if (sortedCountries.length > DISPLAY_LIMITS.MAX_FILTER_COUNTRIES) {
       parts.push(`- *...and ${sortedCountries.length - DISPLAY_LIMITS.MAX_FILTER_COUNTRIES} more countries*`);
+    }
+    parts.push("");
+  }
+
+  if (counts.lifestyle) {
+    parts.push("## Lifestyle");
+    for (const [key, label] of LIFESTYLE_LABELS) {
+      const { count, known } = counts.lifestyle[key];
+      parts.push(`- ${label}: ${count} dogs (${known} have this recorded)`);
     }
     parts.push("");
   }

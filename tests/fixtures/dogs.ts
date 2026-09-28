@@ -259,6 +259,7 @@ export const mockImageContent = {
 };
 
 export const mockFilterCounts: FilterCountsResponse = {
+  total: 1200,
   size_options: [
     { value: "Small", label: "Small", count: 300 },
     { value: "Medium", label: "Medium", count: 500 },
@@ -287,4 +288,13 @@ export const mockFilterCounts: FilterCountsResponse = {
     { value: "DE", label: "Germany", count: 800 },
   ],
   available_region_options: [],
+  lifestyle: {
+    good_with_kids: { count: 310, known: 900 },
+    good_with_dogs: { count: 640, known: 1000 },
+    good_with_cats: { count: 150, known: 500 },
+    first_time_friendly: { count: 270, known: 1150 },
+    energy_low: { count: 90, known: 1180 },
+    energy_medium: { count: 660, known: 1180 },
+    energy_high: { count: 430, known: 1180 },
+  },
 };

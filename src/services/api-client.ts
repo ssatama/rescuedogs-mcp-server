@@ -130,6 +130,7 @@ class ApiClient {
     age_category?: string;
     sex?: string;
     energy_level?: string;
+    energy?: string;
     home_type?: string;
     experience_level?: string;
     available_to_country?: string;
@@ -137,6 +138,7 @@ class ApiClient {
     good_with_kids?: boolean;
     good_with_dogs?: boolean;
     good_with_cats?: boolean;
+    sort?: string;
     limit?: number;
     offset?: number;
   }): Promise<Dog[]> {
@@ -144,6 +146,8 @@ class ApiClient {
     const queryParams = new URLSearchParams();
     queryParams.set("status", "available");
     queryParams.set("availability_confidence", "high,medium");
+    // Otherwise a dog with no recorded age matches every age bucket
+    queryParams.set("age_known", "true");
 
     if (params.search) queryParams.set("search", params.search);
     if (params.breed) queryParams.set("breed", params.breed);
@@ -153,6 +157,7 @@ class ApiClient {
     if (params.age_category) queryParams.set("age_category", params.age_category);
     if (params.sex) queryParams.set("sex", params.sex);
     if (params.energy_level) queryParams.set("energy_level", params.energy_level);
+    if (params.energy) queryParams.set("energy", params.energy);
     if (params.home_type) queryParams.set("home_type", params.home_type);
     if (params.experience_level)
       queryParams.set("experience_level", params.experience_level);
@@ -166,6 +171,7 @@ class ApiClient {
       queryParams.set("good_with_dogs", params.good_with_dogs.toString());
     if (params.good_with_cats !== undefined)
       queryParams.set("good_with_cats", params.good_with_cats.toString());
+    if (params.sort) queryParams.set("sort", params.sort);
     if (params.limit) queryParams.set("limit", params.limit.toString());
     if (params.offset) queryParams.set("offset", params.offset.toString());
 
@@ -203,9 +209,14 @@ class ApiClient {
     age_category?: string;
     sex?: string;
     available_to_country?: string;
+    good_with_kids?: boolean;
+    good_with_dogs?: boolean;
+    good_with_cats?: boolean;
   }): Promise<FilterCountsResponse> {
     const queryParams = new URLSearchParams();
     queryParams.set("status", "available");
+    // Age counts must match what searchDogs returns for the same bucket
+    queryParams.set("age_known", "true");
 
     if (params?.search) queryParams.set("search", params.search);
     if (params?.breed) queryParams.set("breed", params.breed);
@@ -215,6 +226,9 @@ class ApiClient {
     if (params?.sex) queryParams.set("sex", params.sex);
     if (params?.available_to_country)
       queryParams.set("available_to_country", params.available_to_country);
+    if (params?.good_with_kids) queryParams.set("good_with_kids", "true");
+    if (params?.good_with_dogs) queryParams.set("good_with_dogs", "true");
+    if (params?.good_with_cats) queryParams.set("good_with_cats", "true");
 
     return this.request<FilterCountsResponse>({
       method: "GET",

@@ -71,8 +71,8 @@ Search for rescue dogs with comprehensive filtering.
 - `query` - Free-text search
 - `breed` - Filter by breed name
 - `breed_group` - Filter by breed group: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working
-- `size` - Tiny, Small, Medium, Large, XLarge
-- `age_category` - puppy, young, adult, senior
+- `size` - Small, Medium, Large, XLarge (shown as Giant). Tiny is searched as Small
+- `age_category` - puppy, young, adult, senior. Matches only dogs with a recorded age
 - `sex` - male, female
 - `energy_level` - low, medium, high, very_high
 - `experience_level` - first_time_ok, some_experience, experienced_only
@@ -80,6 +80,7 @@ Search for rescue dogs with comprehensive filtering.
 - `adoptable_to_country` - ISO country code (GB, IE, FR, DE)
 - `organization_id` - Restrict to one rescue (see `rescuedogs_list_organizations`)
 - `good_with_kids`, `good_with_dogs`, `good_with_cats` - boolean
+- `sort` - recommended (mixes rescues), newest (default), waiting_longest, youngest, oldest
 - `limit` (1-50, default 10), `offset` - pagination
 - `include_images` - Include dog photos (default: false, max 5 dogs)
 - `image_preset` - `thumbnail` (200x200) or `medium` (400x400)
@@ -97,6 +98,8 @@ Get full details for a specific dog including AI-generated personality profile.
 **Parameters:**
 - `slug` - Dog's URL slug (required)
 - `include_image` - Include photo (default: true)
+- `include_gallery` - Include up to 5 photos from the dog's gallery instead
+  (default: false). Every photo URL is listed either way
 - `image_preset` - `thumbnail` or `medium` (default)
 - `response_format` - `markdown` (default) or `json`
 
@@ -129,7 +132,9 @@ Get overall platform statistics.
 
 ### rescuedogs_get_filter_counts
 
-Get available filter options with counts based on current filters.
+Get available filter options with counts based on current filters, plus how
+many dogs match and how many are good with children, dogs and cats, suit
+first-time owners, and have low, medium or high energy.
 
 ```
 "What filter options are available if I've selected Labrador breed?"
@@ -138,7 +143,7 @@ Get available filter options with counts based on current filters.
 
 **Parameters:**
 - `current_filters` - Object with any of `breed`, `size`, `age_category`, `sex`,
-  `adoptable_to_country`
+  `adoptable_to_country`, `good_with_kids`, `good_with_dogs`, `good_with_cats`
 - `response_format` - `markdown` (default) or `json`
 
 ### rescuedogs_list_organizations

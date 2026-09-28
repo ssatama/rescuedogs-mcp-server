@@ -29,6 +29,15 @@ export interface Dog {
   last_scraped_at: string | null;
   availability_confidence: string;
   organization: Organization | null;
+  // The gallery in the rescue's order: all photos on the dog endpoint, the
+  // first three in lists. Width and height are unknown for older photos.
+  images?: DogImage[];
+}
+
+interface DogImage {
+  url: string;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface DogProfilerData {
@@ -187,7 +196,23 @@ interface FilterOption {
   count: number;
 }
 
+interface LifestyleCount {
+  count: number;
+  known: number;
+}
+
+export interface LifestyleCounts {
+  good_with_kids: LifestyleCount;
+  good_with_dogs: LifestyleCount;
+  good_with_cats: LifestyleCount;
+  first_time_friendly: LifestyleCount;
+  energy_low: LifestyleCount;
+  energy_medium: LifestyleCount;
+  energy_high: LifestyleCount;
+}
+
 export interface FilterCountsResponse {
+  total?: number;
   size_options: FilterOption[];
   age_options: FilterOption[];
   sex_options: FilterOption[];
@@ -196,6 +221,7 @@ export interface FilterCountsResponse {
   location_country_options: FilterOption[];
   available_country_options: FilterOption[];
   available_region_options: FilterOption[];
+  lifestyle?: LifestyleCounts | null;
 }
 
 // Enum types for profiler data

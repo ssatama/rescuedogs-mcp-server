@@ -33,9 +33,14 @@ export function registerMatchPreferencesTool(server: McpServer): void {
       try {
         const parsed = MatchPreferencesInputSchema.parse(input);
 
+        // "high" goes as the API's energy band, which also takes very_high
+        // dogs: they suit an active owner as well.
+        const energyLevel = ENERGY_LEVEL_MAP[parsed.activity_level];
         const dogs = await apiClient.searchDogs({
           home_type: HOME_TYPE_MAP[parsed.living_situation],
-          energy_level: ENERGY_LEVEL_MAP[parsed.activity_level],
+          ...(energyLevel === "high"
+            ? { energy: energyLevel }
+            : { energy_level: energyLevel }),
           experience_level: EXPERIENCE_MAP[parsed.experience],
           available_to_country: normalizeCountryForApi(
             parsed.adoptable_to_country
@@ -50,7 +55,7 @@ export function registerMatchPreferencesTool(server: McpServer): void {
           count: dogs.length,
           matched_criteria: {
             home_type: HOME_TYPE_MAP[parsed.living_situation]!,
-            energy_level: ENERGY_LEVEL_MAP[parsed.activity_level]!,
+            energy_level: energyLevel!,
             experience_level: EXPERIENCE_MAP[parsed.experience]!,
             ...(parsed.has_children !== undefined && {
               good_with_kids: parsed.has_children,
