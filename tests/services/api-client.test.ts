@@ -58,6 +58,27 @@ describe("ApiClient", () => {
       expect(config.url).toContain("status=available");
       expect(config.url).toContain("availability_confidence=high%2Cmedium");
     });
+
+    // Without age_known the API also matches dogs with no recorded age in
+    // every age bucket, so a "puppy" search returned adults of unknown age.
+    it("always asks for dogs whose age is known to match an age bucket", async () => {
+      mockRequest.mockResolvedValue({ data: [] });
+
+      await apiClient.searchDogs({ age_category: "Puppy" });
+
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toContain("age_known=true");
+    });
+
+    it("passes the energy band and sort order", async () => {
+      mockRequest.mockResolvedValue({ data: [] });
+
+      await apiClient.searchDogs({ energy: "high", sort: "oldest" });
+
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toContain("energy=high");
+      expect(config.url).toContain("sort=oldest");
+    });
   });
 
   describe("getDogBySlug", () => {
@@ -124,6 +145,26 @@ describe("ApiClient", () => {
 
       const config = mockRequest.mock.calls[0]![0];
       expect(config.url).toContain("status=available");
+    });
+
+    it("counts age buckets over dogs whose age is known, as search does", async () => {
+      mockRequest.mockResolvedValue({ data: {} });
+
+      await apiClient.getFilterCounts();
+
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toContain("age_known=true");
+    });
+
+    it("passes compatibility filters", async () => {
+      mockRequest.mockResolvedValue({ data: {} });
+
+      await apiClient.getFilterCounts({ good_with_kids: true, good_with_cats: true });
+
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toContain("good_with_kids=true");
+      expect(config.url).toContain("good_with_cats=true");
+      expect(config.url).not.toContain("good_with_dogs");
     });
   });
 

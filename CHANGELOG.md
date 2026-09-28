@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Photo galleries.** `rescuedogs_get_dog_details` returns every photo URL
+  (`photo_urls` in structured output, a Photos section in markdown; list
+  results in `json` carry the first three), and
+  `include_gallery: true` embeds up to five of them instead of the main photo
+  alone (`include_image: false` still embeds none).
+- **Lifestyle counts.** `rescuedogs_get_filter_counts` returns `total`, the
+  number of dogs matching the current filters, and `lifestyle`: how many are
+  good with children, dogs and cats, suit first-time owners, and have low,
+  medium or high energy, each with how many profiles record it at all.
+  `current_filters` takes `good_with_kids`, `good_with_dogs` and
+  `good_with_cats`.
+- **`sort` on `rescuedogs_search_dogs`:** `recommended`, `newest`,
+  `waiting_longest`, `youngest` or `oldest`.
+
 - The HTTP server logs one `mcp_initialize` line per connection with the
   client application's self-reported name and version and the protocol
   version it requested, so usage can be told apart by client (`claude-ai`, `cursor`, and so
@@ -17,6 +31,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inputs or identifiers are logged.
 
 ### Changed
+
+- **Age filters match only dogs with a recorded age.** The API now counts a dog
+  with no recorded age in every age bucket unless asked not to, so a "puppy"
+  search returned 19 dogs of unknown age among 123. Search and filter counts
+  now send `age_known=true`.
+- **One size scale.** The API folded Tiny into Small; `size: "Tiny"` now
+  searches Small (a Tiny filter alone matched 8 dogs). Output reports Tiny dogs
+  as Small, markdown labels XLarge as Giant, as the site does, and `size`
+  accepts `Giant`. The `size` description now says giant breeds are listed as
+  Large: no dog is stored as XLarge today.
+- **High energy includes very_high.** `energy_level: "high"` on
+  `rescuedogs_search_dogs`, and `activity_level: "active"` on
+  `rescuedogs_match_preferences`, ask for the API's high energy band (430 dogs
+  rather than 392), matching the filter counts' high energy figure.
 
 - `PRIVACY.md` now lists the client name in operational logs, and discloses
   that the hosting provider keeps standard HTTP access logs (IP address, user

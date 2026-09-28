@@ -10,6 +10,7 @@ import {
   HOME_TYPE_MAP,
   ENERGY_LEVEL_MAP,
   EXPERIENCE_MAP,
+  energyFilter,
 } from "../utils/mappings.js";
 import { DISPLAY_LIMITS } from "../constants.js";
 
@@ -33,9 +34,10 @@ export function registerMatchPreferencesTool(server: McpServer): void {
       try {
         const parsed = MatchPreferencesInputSchema.parse(input);
 
+        const energyLevel = ENERGY_LEVEL_MAP[parsed.activity_level];
         const dogs = await apiClient.searchDogs({
           home_type: HOME_TYPE_MAP[parsed.living_situation],
-          energy_level: ENERGY_LEVEL_MAP[parsed.activity_level],
+          ...energyFilter(energyLevel),
           experience_level: EXPERIENCE_MAP[parsed.experience],
           available_to_country: normalizeCountryForApi(
             parsed.adoptable_to_country
@@ -50,7 +52,7 @@ export function registerMatchPreferencesTool(server: McpServer): void {
           count: dogs.length,
           matched_criteria: {
             home_type: HOME_TYPE_MAP[parsed.living_situation]!,
-            energy_level: ENERGY_LEVEL_MAP[parsed.activity_level]!,
+            energy_level: energyLevel!,
             experience_level: EXPERIENCE_MAP[parsed.experience]!,
             ...(parsed.has_children !== undefined && {
               good_with_kids: parsed.has_children,

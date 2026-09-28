@@ -10,7 +10,10 @@ import type { ImagePreset, Organization } from "../types.js";
 import {
   AGE_CATEGORY_MAP,
   SEX_MAP,
+  SORT_MAP,
+  energyFilter,
   normalizeCountryForApi,
+  normalizeSize,
 } from "../utils/mappings.js";
 import { DISPLAY_LIMITS } from "../constants.js";
 
@@ -87,10 +90,10 @@ export function registerSearchDogsTool(server: McpServer): void {
           search: searchQuery,
           breed: parsed.breed,
           breed_group: parsed.breed_group,
-          standardized_size: parsed.size,
+          standardized_size: normalizeSize(parsed.size),
           age_category: mappedAgeCategory,
           sex: parsed.sex ? SEX_MAP[parsed.sex] : undefined,
-          energy_level: parsed.energy_level,
+          ...energyFilter(parsed.energy_level),
           home_type: parsed.home_type,
           experience_level: parsed.experience_level,
           available_to_country: normalizeCountryForApi(
@@ -100,6 +103,7 @@ export function registerSearchDogsTool(server: McpServer): void {
           good_with_kids: parsed.good_with_kids,
           good_with_dogs: parsed.good_with_dogs,
           good_with_cats: parsed.good_with_cats,
+          sort: parsed.sort ? SORT_MAP[parsed.sort] : undefined,
           limit: parsed.limit,
           offset: parsed.offset,
         });

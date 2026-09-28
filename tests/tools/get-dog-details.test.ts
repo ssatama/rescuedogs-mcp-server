@@ -13,10 +13,11 @@ vi.mock("../../src/services/api-client.js", () => ({
 
 vi.mock("../../src/services/image-service.js", () => ({
   fetchDogImage: vi.fn(),
+  fetchDogImages: vi.fn(),
 }));
 
 import { apiClient } from "../../src/services/api-client.js";
-import { fetchDogImage } from "../../src/services/image-service.js";
+import { fetchDogImage, fetchDogImages } from "../../src/services/image-service.js";
 import { registerGetDogDetailsTool } from "../../src/tools/get-dog-details.js";
 
 describe("rescuedogs_get_dog_details handler", () => {
@@ -56,6 +57,56 @@ describe("rescuedogs_get_dog_details handler", () => {
     expect(result.content).toHaveLength(1);
     expect(result.content[0]!.type).toBe("text");
     expect(fetchDogImage).not.toHaveBeenCalled();
+  });
+
+  it("returns the photo gallery, capped at five, when include_gallery is true", async () => {
+    const images = Array.from({ length: 7 }, (_, i) => ({
+      url: `https://images.rescuedogs.me/dogs/buddy-${i}.jpg`,
+    }));
+    vi.mocked(apiClient.getDogBySlug).mockResolvedValue({ ...mockDog, images });
+    vi.mocked(fetchDogImages).mockResolvedValue([mockImageContent, null, mockImageContent, mockImageContent, mockImageContent]);
+
+    const handler = getHandler("rescuedogs_get_dog_details");
+    const result = await handler({
+      slug: "buddy-golden-retriever",
+      include_gallery: true,
+      image_preset: "thumbnail",
+    });
+
+    expect(fetchDogImages).toHaveBeenCalledWith(
+      images.slice(0, 5).map((i) => i.url),
+      "thumbnail"
+    );
+    expect(fetchDogImage).not.toHaveBeenCalled();
+    // Four photos that loaded, then the text
+    expect(result.content.map((c) => c.type)).toEqual([
+      "image", "image", "image", "image", "text",
+    ]);
+  });
+
+  it("embeds no photos when include_image is false, even with include_gallery", async () => {
+    vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
+
+    const handler = getHandler("rescuedogs_get_dog_details");
+    const result = await handler({
+      slug: "buddy-golden-retriever",
+      include_image: false,
+      include_gallery: true,
+    });
+
+    expect(fetchDogImages).not.toHaveBeenCalled();
+    expect(fetchDogImage).not.toHaveBeenCalled();
+    expect(result.content.map((c) => c.type)).toEqual(["text"]);
+  });
+
+  it("falls back to the main photo for include_gallery when the API sends no gallery", async () => {
+    vi.mocked(apiClient.getDogBySlug).mockResolvedValue(mockDog);
+    vi.mocked(fetchDogImages).mockResolvedValue([mockImageContent]);
+
+    const handler = getHandler("rescuedogs_get_dog_details");
+    await handler({ slug: "buddy-golden-retriever", include_gallery: true });
+
+    expect(fetchDogImages).toHaveBeenCalledWith([mockDog.primary_image_url], "medium");
   });
 
   it("passes image_preset correctly to fetchDogImage", async () => {

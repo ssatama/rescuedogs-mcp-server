@@ -12,6 +12,40 @@ export const SEX_MAP: Record<string, string> = {
   female: "Female",
 };
 
+// The API has one size scale, Small to XLarge: it folded Tiny into Small, and
+// a Tiny filter alone matches only the few dogs still stored so. The site
+// labels XLarge "Giant", so a caller may send that too.
+export function normalizeSize(size: string | undefined): string | undefined {
+  if (size === "Tiny") return "Small";
+  if (size === "Giant") return "XLarge";
+  return size;
+}
+
+// The site's size labels: Tiny is shown as Small and XLarge as Giant
+export function sizeLabel(size: string): string {
+  const normalized = normalizeSize(size)!;
+  return normalized === "XLarge" ? "Giant" : normalized;
+}
+
+// A "high" energy request goes as the API's band, which also takes very_high
+// dogs, as the site's filter and the filter counts' energy_high do. Other
+// levels match exactly.
+export function energyFilter(
+  level: string | undefined
+): { energy?: string; energy_level?: string } {
+  return level === "high" ? { energy: level } : { energy_level: level };
+}
+
+// Sort mapping: MCP uses plain names, backend expects its sort keys. Note the
+// API's own "oldest" means listed longest ago; the MCP's "oldest" is by age.
+export const SORT_MAP: Record<string, string> = {
+  recommended: "recommended",
+  newest: "newest",
+  waiting_longest: "oldest",
+  youngest: "age-asc",
+  oldest: "age-desc",
+};
+
 // Preference mappings: MCP uses user-friendly values, backend expects internal values
 export const HOME_TYPE_MAP: Record<string, string> = {
   apartment: "apartment_ok",

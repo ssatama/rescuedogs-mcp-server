@@ -63,6 +63,65 @@ describe("rescuedogs_search_dogs handler", () => {
     );
   });
 
+  // The API folded Tiny into Small; a Tiny filter alone matched 8 dogs
+  it('searches "Tiny" as "Small", the one size scale the API uses', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ size: "Tiny" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ standardized_size: "Small" })
+    );
+  });
+
+  // Markdown and filter counts label XLarge as Giant, so the model may send it
+  it('searches "Giant" as "XLarge"', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ size: "Giant" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ standardized_size: "XLarge" })
+    );
+  });
+
+  // Filter counts' "High energy" is the band; an exact energy_level=high
+  // search would show fewer dogs than that count promised
+  it('searches energy_level "high" as the high band, which includes very_high', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ energy_level: "high" });
+
+    const params = vi.mocked(apiClient.searchDogs).mock.calls[0]![0];
+    expect(params.energy).toBe("high");
+    expect(params.energy_level).toBeUndefined();
+  });
+
+  it('maps sort "waiting_longest" to the API\'s "oldest"', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ sort: "waiting_longest" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: "oldest" })
+    );
+  });
+
+  it('maps sort "youngest" to "age-asc"', async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
+
+    const handler = getHandler("rescuedogs_search_dogs");
+    await handler({ sort: "youngest" });
+
+    expect(apiClient.searchDogs).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: "age-asc" })
+    );
+  });
+
   it('maps sex "male" to "Male"', async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([]);
 

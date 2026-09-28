@@ -71,6 +71,67 @@ describe("rescuedogs_get_filter_counts handler", () => {
     );
   });
 
+  it('counts "Tiny" as "Small", the one size scale the API uses', async () => {
+    vi.mocked(cacheService.getFilterCounts).mockReturnValue(undefined);
+    vi.mocked(apiClient.getFilterCounts).mockResolvedValue(mockFilterCounts);
+
+    const handler = getHandler("rescuedogs_get_filter_counts");
+    await handler({ current_filters: { size: "Tiny" } });
+
+    expect(apiClient.getFilterCounts).toHaveBeenCalledWith(
+      expect.objectContaining({ standardized_size: "Small" })
+    );
+  });
+
+  it("passes compatibility filters and keys the cache on them", async () => {
+    vi.mocked(cacheService.getFilterCounts).mockReturnValue(undefined);
+    vi.mocked(apiClient.getFilterCounts).mockResolvedValue(mockFilterCounts);
+
+    const handler = getHandler("rescuedogs_get_filter_counts");
+    await handler({ current_filters: { good_with_kids: true } });
+    await handler({});
+
+    expect(apiClient.getFilterCounts).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ good_with_kids: true })
+    );
+    const [withKids, without] = vi
+      .mocked(cacheService.setFilterCounts)
+      .mock.calls.map((c) => c[0]);
+    expect(withKids).not.toBe(without);
+  });
+
+  it("returns the matching total and lifestyle counts", async () => {
+    vi.mocked(cacheService.getFilterCounts).mockReturnValue(mockFilterCounts);
+
+    const handler = getHandler("rescuedogs_get_filter_counts");
+    const result = await handler({});
+
+    expect(result.structuredContent).toMatchObject({
+      total: 1200,
+      lifestyle: { good_with_kids: { count: 310, known: 900 } },
+    });
+    const text = result.content[0]!.text!;
+    expect(text).toContain("**Matching dogs:** 1200");
+    expect(text).toContain("## Lifestyle");
+    expect(text).toContain("- Good with children: 310 dogs (900 have this recorded)");
+    expect(text).toContain("- High energy: 430 dogs");
+  });
+
+  it("omits lifestyle counts when the API sends none", async () => {
+    vi.mocked(cacheService.getFilterCounts).mockReturnValue({
+      ...mockFilterCounts,
+      lifestyle: null,
+    });
+
+    const handler = getHandler("rescuedogs_get_filter_counts");
+    const result = await handler({});
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent).not.toHaveProperty("lifestyle");
+    expect(result.content[0]!.text).not.toContain("## Lifestyle");
+  });
+
   it("produces deterministic cache key from sorted filter keys", async () => {
     vi.mocked(cacheService.getFilterCounts).mockReturnValue(undefined);
     vi.mocked(apiClient.getFilterCounts).mockResolvedValue(mockFilterCounts);

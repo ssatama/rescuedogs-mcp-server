@@ -77,6 +77,12 @@ const DogSchema = z.object({
     .nullish()
     .describe("The rescue's own page - always surface this"),
   primary_image_url: z.string().optional(),
+  photo_urls: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "Every photo of the dog, in the rescue's order"
+    ),
   profile: ProfileSchema.optional(),
   organization: OrganizationSchema.optional(),
 });
@@ -113,7 +119,9 @@ export const MatchPreferencesOutputShape = {
   matched_criteria: z
     .object({
       home_type: z.string(),
-      energy_level: z.string(),
+      energy_level: z
+        .string()
+        .describe('Profile energy level; "high" also matches very_high dogs'),
       experience_level: z.string(),
       good_with_kids: z.boolean().optional(),
       good_with_dogs: z.boolean().optional(),
@@ -152,7 +160,29 @@ export const ListBreedsOutputShape = {
   ),
 };
 
+const LifestyleCountSchema = z.object({
+  count: z.number().int().describe("Dogs the filter would show"),
+  known: z.number().int().describe("Dogs whose profile records this at all"),
+});
+
 export const GetFilterCountsOutputShape = {
+  total: z
+    .number()
+    .int()
+    .optional()
+    .describe("Dogs matching every current filter"),
+  lifestyle: z
+    .object({
+      good_with_kids: LifestyleCountSchema,
+      good_with_dogs: LifestyleCountSchema,
+      good_with_cats: LifestyleCountSchema,
+      first_time_friendly: LifestyleCountSchema,
+      energy_low: LifestyleCountSchema,
+      energy_medium: LifestyleCountSchema,
+      energy_high: LifestyleCountSchema,
+    })
+    .optional()
+    .describe("Counts for the compatibility, first-time owner and energy filters, given the current filters"),
   size_options: z.array(FilterOptionSchema),
   age_options: z.array(FilterOptionSchema),
   sex_options: z.array(FilterOptionSchema),

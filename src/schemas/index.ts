@@ -1,7 +1,14 @@
 import { z } from "zod";
 
-const SizeEnum = z.enum(["Tiny", "Small", "Medium", "Large", "XLarge"]);
+const SizeEnum = z.enum(["Tiny", "Small", "Medium", "Large", "XLarge", "Giant"]);
 const AgeCategoryEnum = z.enum(["puppy", "young", "adult", "senior"]);
+const SortEnum = z.enum([
+  "recommended",
+  "newest",
+  "waiting_longest",
+  "youngest",
+  "oldest",
+]);
 const SexEnum = z.enum(["male", "female"]);
 const EnergyLevelEnum = z.enum(["low", "medium", "high", "very_high"]);
 const ExperienceLevelEnum = z.enum([
@@ -33,13 +40,15 @@ export const SearchDogsInputSchema = z
       .describe(
         "Filter by breed group. Valid values: Designer/Hybrid, Guardian, Herding, Hound, Mixed, Non-Sporting, Sporting, Terrier, Toy, Working. These are not FCI groups - an FCI group name matches nothing."
       ),
-    size: SizeEnum.optional().describe("Filter by standardized size"),
+    size: SizeEnum.optional().describe(
+      "Filter by size: Small, Medium or Large. Giant breeds are listed as Large; XLarge (also accepted as Giant) is rarely used, so check rescuedogs_get_filter_counts before relying on it. Tiny is searched as Small."
+    ),
     age_category: AgeCategoryEnum.optional().describe(
       "Filter by age category: puppy (0-12 months), young (1-3 years), adult (3-8 years), senior (8+ years)"
     ),
     sex: SexEnum.optional().describe("Filter by sex"),
     energy_level: EnergyLevelEnum.optional().describe(
-      "Filter by energy level from LLM profiler data"
+      "Filter by energy level from LLM profiler data; high also matches very_high dogs"
     ),
     experience_level: ExperienceLevelEnum.optional().describe(
       "Filter by required owner experience level"
@@ -68,6 +77,9 @@ export const SearchDogsInputSchema = z
       .boolean()
       .optional()
       .describe("Set to true to filter for dogs good with cats"),
+    sort: SortEnum.optional().describe(
+      "Result order: 'newest' listed (default), 'recommended' (mixes rescues), 'waiting_longest' (listed longest ago), 'youngest' or 'oldest' (by age)"
+    ),
     limit: z
       .number()
       .int()
@@ -103,6 +115,10 @@ export const GetDogDetailsInputSchema = z
       .boolean()
       .default(true)
       .describe("Include dog photo in response"),
+    include_gallery: z
+      .boolean()
+      .default(false)
+      .describe("With include_image, embed up to 5 photos from the dog's gallery instead of the main photo alone (larger response)"),
     image_preset: ImagePresetEnum.default("medium").describe(
       "Image size preset: 'thumbnail' (200x200) or 'medium' (400x400)"
     ),
@@ -156,6 +172,18 @@ export const GetFilterCountsInputSchema = z
         age_category: z.string().optional(),
         sex: z.string().optional(),
         adoptable_to_country: z.string().optional(),
+        good_with_kids: z
+          .boolean()
+          .optional()
+          .describe("true counts only dogs good with children"),
+        good_with_dogs: z
+          .boolean()
+          .optional()
+          .describe("true counts only dogs good with other dogs"),
+        good_with_cats: z
+          .boolean()
+          .optional()
+          .describe("true counts only dogs good with cats"),
       })
       .optional()
       .describe("Current filter context to show remaining options"),

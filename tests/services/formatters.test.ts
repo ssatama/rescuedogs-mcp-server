@@ -108,6 +108,40 @@ describe("formatDogMarkdown", () => {
     expect(result).not.toContain("undefined");
   });
 
+  it("lists every gallery photo when there is more than one", () => {
+    const result = formatDogMarkdown({
+      ...mockDog,
+      images: [
+      { url: "https://images.rescuedogs.me/dogs/buddy.jpg", width: 800, height: 600 },
+      { url: "https://images.rescuedogs.me/dogs/buddy-2.jpg", width: null, height: null },
+    ],
+    });
+    expect(result).toContain("## Photos (2)");
+    expect(result).toContain("- https://images.rescuedogs.me/dogs/buddy-2.jpg");
+  });
+
+  // include_image may be false, or the fetch may fail: the URL is the fallback
+  it("lists a single photo too", () => {
+    const result = formatDogMarkdown({
+      ...mockDog,
+      images: [{ url: "https://images.rescuedogs.me/dogs/buddy.jpg" }],
+    });
+    expect(result).toContain("## Photos (1)");
+    expect(result).toContain("- https://images.rescuedogs.me/dogs/buddy.jpg");
+  });
+
+  it("labels sizes as the site does: XLarge is Giant, Tiny is Small", () => {
+    expect(formatDogMarkdown({ ...mockDog, standardized_size: "XLarge" })).toContain(
+      "- **Size:** Giant"
+    );
+    expect(formatDogMarkdown({ ...mockDog, standardized_size: "Tiny" })).toContain(
+      "- **Size:** Small"
+    );
+    expect(formatDogsListMarkdown([{ ...mockDog, standardized_size: "XLarge" }])).toContain(
+      "**Size:** Giant"
+    );
+  });
+
   it("includes rescuedogs.me profile link", () => {
     const result = formatDogMarkdown(mockDog);
     expect(result).toContain(`https://www.rescuedogs.me/dogs/${mockDog.slug}`);

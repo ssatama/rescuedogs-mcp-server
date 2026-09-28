@@ -131,6 +131,42 @@ describe("live API contract", () => {
       ] as const) {
         expect(Array.isArray(counts[key])).toBe(true);
       }
+      expect(typeof counts.total).toBe("number");
+      expect(counts.lifestyle?.good_with_kids.count).toEqual(expect.any(Number));
+      expect(counts.lifestyle?.energy_high.known).toEqual(expect.any(Number));
+    },
+    TIMEOUT
+  );
+
+  it(
+    "an age search returns only dogs with a recorded age",
+    async () => {
+      const puppies = await apiClient.searchDogs({ age_category: "Puppy", limit: 100 });
+      expect(puppies.length).toBeGreaterThan(0);
+      for (const dog of puppies) {
+        expect(typeof (dog.age_min_months ?? dog.age_max_months)).toBe("number");
+      }
+    },
+    TIMEOUT
+  );
+
+  it(
+    "the high energy band includes very_high dogs",
+    async () => {
+      const veryHigh = await apiClient.searchDogs({ energy: "high", limit: 100 });
+      expect(
+        veryHigh.some((d) => d.dog_profiler_data?.energy_level === "very_high")
+      ).toBe(true);
+    },
+    TIMEOUT
+  );
+
+  it(
+    "getDogBySlug carries the photo gallery",
+    async () => {
+      const dog = await apiClient.getDogBySlug(dogs[0]!.slug);
+      expect(dog.images?.length).toBeGreaterThan(0);
+      expect(typeof dog.images![0]!.url).toBe("string");
     },
     TIMEOUT
   );
