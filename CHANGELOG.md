@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-09-28
+
+Catches up with the rescuedogs API's changes of the past week (#86). Age,
+size and energy filters return what they say again, and dog details and
+filter counts carry the API's new photo galleries and lifestyle counts. The
+change is additive; no tool was added, renamed or removed. Also ships the
+per-connection client logging and the `PRIVACY.md` correction from #82.
+
 ### Added
 
 - **Photo galleries.** `rescuedogs_get_dog_details` returns every photo URL
