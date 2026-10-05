@@ -133,6 +133,28 @@ describe("http app", () => {
     });
   });
 
+  it("rejects a JSON-RPC batch of more than 100 messages", async () => {
+    // Each message could be a tool call hitting the upstream API; the SDK
+    // (>= 1.30.1) caps the batch so one request can't fan out unbounded.
+    const batch = Array.from({ length: 101 }, (_, i) => ({
+      jsonrpc: "2.0",
+      id: i,
+      method: "tools/list",
+    }));
+    const res = await fetch(`${url}/mcp`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+      },
+      body: JSON.stringify(batch),
+    });
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toMatchObject({
+      error: { code: -32600 },
+    });
+  });
+
   it("answers a CORS preflight so browser clients can connect", async () => {
     const res = await fetch(`${url}/mcp`, {
       method: "OPTIONS",
