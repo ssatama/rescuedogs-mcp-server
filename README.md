@@ -40,6 +40,8 @@ It speaks MCP streamable HTTP, needs no authentication, and is read-only.
 npm install -g rescuedogs-mcp-server
 ```
 
+Requires Node.js 22 or later.
+
 Then add it to your client's MCP config. For Claude Desktop that is
 `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or
 `%APPDATA%\Claude\claude_desktop_config.json` on Windows:
