@@ -9,8 +9,8 @@
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-// readdirSync rather than fs.globSync: the latter needs Node 22 and this
-// package supports Node 20.
+// readdirSync rather than fs.globSync: the latter is experimental before
+// Node 22.17 and this package supports Node 22.0.
 const files = readdirSync(process.cwd())
   .filter((f) => f.endsWith(".md"))
   .sort();

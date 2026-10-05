@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Requires Node.js 22 or later (`engines` was `>=20.0.0`). Node 20 reached
+  end of life on 2026-04-30; CI now tests 22.x and 24.x.
+
 ### Security
 
 - `@modelcontextprotocol/sdk` 1.32.1 (from 1.30.0). Since 1.30.1 the HTTP
