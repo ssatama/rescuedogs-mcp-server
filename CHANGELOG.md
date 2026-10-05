@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.0] - 2026-10-05
 
-Drops Node.js 20, which reached end of life on 2026-04-30. That is the only
-breaking change: the tools, their inputs and their output are the same as
-2.2.0. Also patches two runtime dependencies.
+Drops Node.js 20, which reached end of life on 2026-04-30. The tools, their
+inputs and their output are the same as 2.2.0. The HTTP server now rejects
+JSON-RPC batches of more than 100 messages, and two runtime dependencies are
+patched.
 
 ### Removed
 
@@ -21,12 +22,16 @@ breaking change: the tools, their inputs and their output are the same as
 
 ### Security
 
-- `@modelcontextprotocol/sdk` 1.32.1 (from 1.30.0). Since 1.30.1 the HTTP
-  transport rejects JSON-RPC batches of more than 100 messages, so one
-  request can no longer fan out into unbounded upstream calls.
+- `@modelcontextprotocol/sdk` `^1.32.1` (was `^1.26.0`). Since 1.30.1 the
+  HTTP transport rejects JSON-RPC batches of more than 100 messages with
+  `400` / `-32600`, so one request can no longer fan out into unbounded
+  upstream calls.
 - `ip-address` 10.7.3 (from 10.5.0, via `express-rate-limit`), fixing
   GHSA-2vr4-cq9g-pvrc, GHSA-rpw4-54j3-4h4q, GHSA-j6r3-76f7-8jcv and
-  GHSA-h3mg-xc3c-68pw.
+  GHSA-h3mg-xc3c-68pw. The lockfile pins it for the hosted server and the
+  Docker image; a fresh npm install resolves it too, but an existing tree
+  holding 10.2 to 10.5 keeps it (`express-rate-limit` allows `^10.2.0`), so
+  run `npm update ip-address` there.
 
 ## [2.2.0] - 2026-09-28
 
@@ -51,8 +56,7 @@ per-connection client logging and the `PRIVACY.md` correction from #82.
   `good_with_cats`.
 - **`sort` on `rescuedogs_search_dogs`:** `recommended`, `newest`,
   `waiting_longest`, `youngest` or `oldest`.
-
-- The HTTP server logs one `mcp_initialize` line per connection with the
+- **Client logging.** The HTTP server logs one `mcp_initialize` line per connection with the
   client application's self-reported name and version and the protocol
   version it requested, so usage can be told apart by client (`claude-ai`, `cursor`, and so
   on). User-Agent can't do this reliably. Only initializes the SDK accepts are

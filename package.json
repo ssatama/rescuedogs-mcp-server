@@ -44,7 +44,7 @@
     "url": "https://github.com/ssatama/rescuedogs-mcp-server/issues"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "axios": "^1.15.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
