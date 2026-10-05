@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+## [3.0.0] - 2026-10-05
 
-- Requires Node.js 22 or later (`engines` was `>=20.0.0`). Node 20 reached
-  end of life on 2026-04-30; CI now tests 22.x and 24.x.
+Drops Node.js 20, which reached end of life on 2026-04-30. That is the only
+breaking change: the tools, their inputs and their output are the same as
+2.2.0. Also patches two runtime dependencies.
+
+### Removed
+
+- **BREAKING:** Node.js 20 support. `engines` is now `>=22.0.0` (was
+  `>=20.0.0`), and CI tests 22.x and 24.x. Running on Node 20 gives an
+  EBADENGINE warning, or a failure with `engine-strict`.
 
 ### Security
 
