@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- `@modelcontextprotocol/sdk` 1.32.1 (from 1.30.0). Since 1.30.1 the HTTP
+  transport reads request bodies with a size limit and bounds JSON-RPC
+  batch length.
+- `ip-address` 10.7.3 (from 10.5.0, via `express-rate-limit`), fixing
+  GHSA-2vr4-cq9g-pvrc, GHSA-rpw4-54j3-4h4q, GHSA-j6r3-76f7-8jcv and
+  GHSA-h3mg-xc3c-68pw.
+
 ## [2.2.0] - 2026-09-28
 
 Catches up with the rescuedogs API's changes of the past week (#86). Age,
