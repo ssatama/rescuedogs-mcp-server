@@ -1,7 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    ".railway/railway.ts"
+  ],
   "project": [
     "src/**/*.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    ".railway/**/*.ts"
   ]
 }

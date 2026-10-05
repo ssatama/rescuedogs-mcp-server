@@ -9,5 +9,5 @@
   // That exclude is inherited through `extends` and would filter out the
   // include below, so it has to be reset here.
   "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["src/**/*", "tests/**/*", ".railway/**/*"]
 }
