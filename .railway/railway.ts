@@ -1,7 +1,7 @@
 import { defineRailway, github, project, service } from "railway/iac";
 
-// Railway Infrastructure as Code for the hosted HTTP server, replacing
-// railway.json (Config as Code, unsupported from 2026-12-01). Railway doesn't
+// Railway Infrastructure as Code for the hosted HTTP server (it replaced
+// railway.json; Config as Code is unsupported from 2026-12-01). Railway doesn't
 // read this file on deploy: after changing it, run `railway config plan` and
 // `railway config apply`. Settings changed in the dashboard drift from it;
 // `railway config plan --detailed-exit-code` exits 2 when they differ.
@@ -23,11 +23,10 @@ export default defineRailway(() => {
     // Dockerfile (the Smithery stdio image, which never listens) or Railpack,
     // never Dockerfile.http. Dockerfile.http's CMD is the start command.
     build: { builder: "DOCKERFILE", dockerfilePath: "Dockerfile.http" },
-    deploy: {
-      healthcheckPath: "/health",
-      restartPolicyType: "ON_FAILURE",
-      restartPolicyMaxRetries: 10,
-    },
+    // Restart policy is Railway's default, ON_FAILURE with 10 retries.
+    // Declaring it makes plan show a change forever: Railway stores the
+    // default as null.
+    deploy: { healthcheckPath: "/health" },
     networking: {
       customDomains: { "mcp.rescuedogs.me": { port: PORT } },
       serviceDomains: { "rescuedogs-mcp-production.up.railway.app": { port: PORT } },
