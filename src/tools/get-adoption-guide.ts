@@ -11,7 +11,8 @@ export function registerGetAdoptionGuideTool(server: McpServer): void {
     "rescuedogs_get_adoption_guide",
     {
       title: "Get adoption guide",
-      description: "Get information about the rescue dog adoption process including transport, fees, requirements, and timeline.",
+      description:
+        "Get general guidance on adopting a rescue dog from abroad, by topic: overview, transport, fees, requirements or timeline. With country, adds entry rules for GB (UK also accepted), IE, DE or FR; for any other country the general guide is returned alone, and the response's country field is set only when country rules were added. The content is static and bundled with this server, so for a specific dog's fee and process the rescue's adoption page is the authority.",
       inputSchema: GetAdoptionGuideInputSchema.shape,
       outputSchema: GetAdoptionGuideOutputShape,
       annotations: {

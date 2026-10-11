@@ -12,7 +12,8 @@ export function registerListOrganizationsTool(server: McpServer): void {
     "rescuedogs_list_organizations",
     {
       title: "List rescue organizations",
-      description: "List rescue organizations with their statistics and available dogs count.",
+      description:
+        "List rescue organizations with each one's country and city, the countries it adopts to, its adoption fees, website and number of available dogs. Each has a numeric id to pass as organization_id to rescuedogs_search_dogs. Filter by the organization's country with an ISO code (GB and UK both work); active_only (default true) returns active organizations only. Returns up to 50 (default 20).",
       inputSchema: ListOrganizationsInputSchema.shape,
       outputSchema: ListOrganizationsOutputShape,
       annotations: {

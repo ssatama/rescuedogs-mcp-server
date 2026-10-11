@@ -19,7 +19,8 @@ export function registerMatchPreferencesTool(server: McpServer): void {
     "rescuedogs_match_preferences",
     {
       title: "Match dogs to lifestyle",
-      description: "Find dogs that match your lifestyle preferences. Translates your living situation, activity level, and experience into appropriate filters.",
+      description:
+        "Find dogs for an adopter who describes their lifestyle rather than concrete criteria: living situation, activity level and dog experience, optionally children, other dogs, cats and the country they live in. Each answer becomes one exact-match filter on the dog's profile - apartment to apartment_ok, either house to house_preferred, rural to house_required; activity to low, medium, high (which includes very_high) or very_high energy; experience to first_time_ok, some_experience or experienced_only - so an experienced adopter is shown only dogs that need an experienced owner. Returns up to 20 dogs (default 5) with no pagination, plus the filters applied as matched_criteria. To widen the match or page through results, use rescuedogs_search_dogs with the filters you want.",
       inputSchema: MatchPreferencesInputSchema.shape,
       outputSchema: MatchPreferencesOutputShape,
       annotations: {

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `rescuedogs_match_preferences` no longer claims `has_children`,
+  `has_other_dogs` or `has_cats` set to `false` exclude dogs: the API ignores
+  `false`, so it applies no filter, the same as omitting the field.
+
+### Changed
+
+- Fuller tool descriptions: limits, pagination, which IDs pass between tools,
+  and when another tool fits better. `rescuedogs_match_preferences` says its
+  filters match exactly, `rescuedogs_get_adoption_guide` says which countries
+  have specific rules (GB/UK, IE, DE, FR), and `good_with_kids` says it includes
+  dogs suited to older children only. The `rescuedogs_get_filter_counts`
+  `current_filters` fields now describe their valid values.
+
 ## [3.0.0] - 2026-10-05
 
 Drops Node.js 20, which reached end of life on 2026-04-30. The tools, their

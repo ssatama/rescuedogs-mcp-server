@@ -166,7 +166,9 @@ List rescue organizations with their statistics.
 
 ### rescuedogs_match_preferences
 
-Find dogs matching your lifestyle preferences.
+Find dogs for an adopter who describes their lifestyle. Each answer becomes an
+exact-match filter (an experienced adopter sees dogs that need an experienced
+owner); use `rescuedogs_search_dogs` to widen or page through results.
 
 ```
 "I live in an apartment, have moderate activity, and am a first-time dog owner"
@@ -177,8 +179,9 @@ Find dogs matching your lifestyle preferences.
 - `living_situation` - apartment, house_small_garden, house_large_garden, rural
 - `activity_level` - sedentary, moderate, active, very_active
 - `experience` - first_time, some, experienced
-- `has_children`, `has_other_dogs`, `has_cats` - boolean. Set to filter; omit to
-  not filter on it at all
+- `has_children`, `has_other_dogs`, `has_cats` - boolean. `true` filters to dogs
+  good with them (for children, this includes dogs suited to older children
+  only); `false` or omitted applies no filter
 - `adoptable_to_country` - ISO country code
 - `limit` - Number of matches (1-20, default 5)
 - `include_images` - Include dog photos (default: false)
@@ -196,7 +199,8 @@ Get information about the rescue dog adoption process.
 
 **Parameters:**
 - `topic` - overview, transport, fees, requirements, timeline
-- `country` - ISO code for country-specific info
+- `country` - ISO code for country-specific info: GB (or UK), IE, DE or FR; other
+  codes return the general guide
 
 ## Geographic Scope
 
