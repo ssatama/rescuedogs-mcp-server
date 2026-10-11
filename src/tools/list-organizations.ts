@@ -28,10 +28,13 @@ export function registerListOrganizationsTool(server: McpServer): void {
       try {
         const parsed = ListOrganizationsInputSchema.parse(input);
 
-        // Check cache first (only for unfiltered requests)
+        // The cache entry is shared with search_dogs' organization-name
+        // matching, so it only ever holds the full active list: limit is
+        // applied below, and other filters bypass the cache.
+        const useCache = !parsed.country && parsed.active_only;
         let orgs: Awaited<ReturnType<typeof apiClient.getOrganizations>> | undefined;
 
-        if (!parsed.country) {
+        if (useCache) {
           orgs = cacheService.getOrganizations<typeof orgs>();
         }
 
@@ -39,13 +42,15 @@ export function registerListOrganizationsTool(server: McpServer): void {
           orgs = await apiClient.getOrganizations({
             country: normalizeCountryForApi(parsed.country),
             active_only: parsed.active_only,
-            limit: parsed.limit,
+            ...(!useCache && { limit: parsed.limit }),
           });
 
-          if (!parsed.country) {
+          if (useCache) {
             cacheService.setOrganizations(orgs);
           }
         }
+
+        orgs = orgs.slice(0, parsed.limit);
 
         const structured = {
           count: orgs.length,

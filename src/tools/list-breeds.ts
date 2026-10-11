@@ -11,7 +11,7 @@ export function registerListBreedsTool(server: McpServer): void {
     {
       title: "List available breeds",
       description:
-        "List the breeds that currently have rescue dogs available, with each breed's dog count, number of organizations, breed group and common personality traits. Narrow with breed_group, or with min_count to drop breeds with few dogs; the totals describe the breeds returned, not the whole platform. Use it to find breed names and groups that exist before filtering rescuedogs_search_dogs by breed or breed_group.",
+        "List the breeds that currently have rescue dogs available, with each breed's dog count, number of organizations, breed group and common personality traits. Narrow with breed_group, or with min_count to drop breeds with few dogs. Use it to find breed names and groups that exist before filtering rescuedogs_search_dogs by breed or breed_group.",
       inputSchema: ListBreedsInputSchema.shape,
       outputSchema: ListBreedsOutputShape,
       annotations: {

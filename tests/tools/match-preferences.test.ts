@@ -99,6 +99,22 @@ describe("rescuedogs_match_preferences handler", () => {
     );
   });
 
+  it("leaves false compatibility flags out of matched_criteria", async () => {
+    vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
+
+    const handler = getHandler("rescuedogs_match_preferences");
+    const result = await handler({
+      ...baseInput,
+      has_children: false,
+      has_cats: true,
+      response_format: "json",
+    });
+
+    const parsed = JSON.parse(result.content[0]!.text!);
+    expect(parsed.matched_criteria).not.toHaveProperty("good_with_kids");
+    expect(parsed.matched_criteria.good_with_cats).toBe(true);
+  });
+
   it("returns JSON with matched_criteria including only defined flags", async () => {
     vi.mocked(apiClient.searchDogs).mockResolvedValue([mockDog]);
 

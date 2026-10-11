@@ -14,7 +14,7 @@ export function registerGetDogDetailsTool(server: McpServer): void {
     {
       title: "Get dog details",
       description:
-        "Get the full profile of one rescue dog by its slug, taken from rescuedogs_search_dogs or rescuedogs_match_preferences results. Returns the listing details, compatibility with children, dogs and cats, owner requirements, the rescuing organization, and the rescue's adoption_url, where applications are made. The personality profile is AI-generated from the listing text and can be incomplete; the rescue is the authority on the dog. Includes the main photo by default, or up to 5 gallery photos with include_gallery. An unknown slug returns an error.",
+        "Get the full profile of one rescue dog by its slug, taken from rescuedogs_search_dogs or rescuedogs_match_preferences results. Returns the listing details, compatibility with children, dogs and cats, owner requirements, the rescuing organization, and the rescue's adoption_url, where applications are made. The personality profile is AI-generated from the listing text and can be incomplete; the rescue is the authority on the dog. In markdown output it includes the main photo by default, or up to 5 gallery photos with include_gallery; json output has photo URLs but no images. An unknown slug returns an error.",
       inputSchema: GetDogDetailsInputSchema.shape,
       outputSchema: GetDogDetailsOutputShape,
       annotations: {

@@ -55,15 +55,10 @@ export function registerMatchPreferencesTool(server: McpServer): void {
             home_type: HOME_TYPE_MAP[parsed.living_situation]!,
             energy_level: energyLevel!,
             experience_level: EXPERIENCE_MAP[parsed.experience]!,
-            ...(parsed.has_children !== undefined && {
-              good_with_kids: parsed.has_children,
-            }),
-            ...(parsed.has_other_dogs !== undefined && {
-              good_with_dogs: parsed.has_other_dogs,
-            }),
-            ...(parsed.has_cats !== undefined && {
-              good_with_cats: parsed.has_cats,
-            }),
+            // Only filters actually applied: the API ignores false
+            ...(parsed.has_children && { good_with_kids: true }),
+            ...(parsed.has_other_dogs && { good_with_dogs: true }),
+            ...(parsed.has_cats && { good_with_cats: true }),
           },
           dogs: dogs.map(toPublicDogSummary),
         };

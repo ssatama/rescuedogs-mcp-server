@@ -245,6 +245,20 @@ describe("formatOrganizationMarkdown", () => {
     expect(result).toContain("https://happypaws.org");
   });
 
+  it("includes the id to search with", () => {
+    const result = formatOrganizationMarkdown(mockOrganization);
+    expect(result).toContain("**ID:** 1 (organization_id for rescuedogs_search_dogs)");
+  });
+
+  it("includes the usual adoption fee when known", () => {
+    expect(formatOrganizationMarkdown(mockOrganization)).not.toContain("Fee");
+    const result = formatOrganizationMarkdown({
+      ...mockOrganization,
+      adoption_fees: { currency: "EUR", usual_fee: 350 },
+    });
+    expect(result).toContain("**Usual Adoption Fee:** 350 EUR");
+  });
+
   it("includes ships_to countries", () => {
     const result = formatOrganizationMarkdown(mockOrganization);
     expect(result).toContain("UK, DE, FR");

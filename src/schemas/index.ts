@@ -69,16 +69,16 @@ export const SearchDogsInputSchema = z
       .boolean()
       .optional()
       .describe(
-        "Set to true to filter for dogs good with children, including dogs suited to older children only"
+        "Set to true to filter for dogs good with children, including dogs suited to older children only. false applies no filter"
       ),
     good_with_dogs: z
       .boolean()
       .optional()
-      .describe("Set to true to filter for dogs good with other dogs"),
+      .describe("Set to true to filter for dogs good with other dogs. false applies no filter"),
     good_with_cats: z
       .boolean()
       .optional()
-      .describe("Set to true to filter for dogs good with cats"),
+      .describe("Set to true to filter for dogs good with cats. false applies no filter"),
     sort: SortEnum.optional().describe(
       "Result order: 'newest' listed (default), 'recommended' (mixes rescues), 'waiting_longest' (listed longest ago), 'youngest' or 'oldest' (by age)"
     ),
@@ -176,7 +176,7 @@ export const GetFilterCountsInputSchema = z
         size: z
           .string()
           .optional()
-          .describe("Small, Medium, Large or XLarge; Tiny counts as Small and Giant as XLarge"),
+          .describe("Small, Medium or Large; giant breeds are listed as Large, XLarge (also accepted as Giant) is rarely used, and Tiny counts as Small"),
         age_category: z
           .string()
           .optional()

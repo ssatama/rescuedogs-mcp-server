@@ -11,7 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `rescuedogs_match_preferences` no longer claims `has_children`,
   `has_other_dogs` or `has_cats` set to `false` exclude dogs: the API ignores
-  `false`, so it applies no filter, the same as omitting the field.
+  `false`, so it applies no filter, the same as omitting the field. `false` is
+  no longer sent to the API at all, and `matched_criteria` lists only the
+  compatibility filters that were applied.
+- `rescuedogs_list_organizations` ignored `limit` and `active_only: false`
+  whenever the organization list was cached, and a `limit` it fetched could
+  leave `rescuedogs_search_dogs` matching organization names against a partial
+  list for 10 minutes. The cache now always holds the full active list.
+
+### Added
+
+- `rescuedogs_list_organizations` markdown shows each organization's id (the
+  `organization_id` for `rescuedogs_search_dogs`) and its usual adoption fee.
 
 ### Changed
 
