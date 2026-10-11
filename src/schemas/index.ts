@@ -68,15 +68,17 @@ export const SearchDogsInputSchema = z
     good_with_kids: z
       .boolean()
       .optional()
-      .describe("Set to true to filter for dogs good with children"),
+      .describe(
+        "Set to true to filter for dogs good with children, including dogs suited to older children only. false applies no filter"
+      ),
     good_with_dogs: z
       .boolean()
       .optional()
-      .describe("Set to true to filter for dogs good with other dogs"),
+      .describe("Set to true to filter for dogs good with other dogs. false applies no filter"),
     good_with_cats: z
       .boolean()
       .optional()
-      .describe("Set to true to filter for dogs good with cats"),
+      .describe("Set to true to filter for dogs good with cats. false applies no filter"),
     sort: SortEnum.optional().describe(
       "Result order: 'newest' listed (default), 'recommended' (mixes rescues), 'waiting_longest' (listed longest ago), 'youngest' or 'oldest' (by age)"
     ),
@@ -167,11 +169,26 @@ export const GetFilterCountsInputSchema = z
   .object({
     current_filters: z
       .object({
-        breed: z.string().optional(),
-        size: z.string().optional(),
-        age_category: z.string().optional(),
-        sex: z.string().optional(),
-        adoptable_to_country: z.string().optional(),
+        breed: z
+          .string()
+          .optional()
+          .describe("Breed name, as listed by rescuedogs_list_breeds"),
+        size: z
+          .string()
+          .optional()
+          .describe("Small, Medium or Large; giant breeds are listed as Large, XLarge (also accepted as Giant) is rarely used, and Tiny counts as Small"),
+        age_category: z
+          .string()
+          .optional()
+          .describe("puppy, young, adult or senior; any other value is ignored"),
+        sex: z
+          .string()
+          .optional()
+          .describe("male or female; any other value is ignored"),
+        adoptable_to_country: z
+          .string()
+          .optional()
+          .describe("ISO code of the adopter's country (e.g., 'GB', 'IE')"),
         good_with_kids: z
           .boolean()
           .optional()
@@ -242,15 +259,15 @@ export const MatchPreferencesInputSchema = z
     has_children: z
       .boolean()
       .optional()
-      .describe("Set to true to filter for dogs good with children, false to exclude them, or omit to not filter by this"),
+      .describe("true returns only dogs recorded as good with children, including dogs suited to older children only. false applies no filter, the same as omitting it"),
     has_other_dogs: z
       .boolean()
       .optional()
-      .describe("Set to true to filter for dogs good with other dogs, false to exclude them, or omit to not filter by this"),
+      .describe("true returns only dogs recorded as good with other dogs. false applies no filter, the same as omitting it"),
     has_cats: z
       .boolean()
       .optional()
-      .describe("Set to true to filter for dogs good with cats, false to exclude them, or omit to not filter by this"),
+      .describe("true returns only dogs recorded as good with cats. false applies no filter, the same as omitting it"),
     adoptable_to_country: z
       .string()
       .optional()
@@ -288,6 +305,8 @@ export const GetAdoptionGuideInputSchema = z
     country: z
       .string()
       .optional()
-      .describe("ISO country code for country-specific adoption info"),
+      .describe(
+        "ISO code of the adopter's country. GB (or UK), IE, DE and FR add country-specific rules; other codes return the general guide only"
+      ),
   })
   .strict();

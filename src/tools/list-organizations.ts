@@ -12,7 +12,8 @@ export function registerListOrganizationsTool(server: McpServer): void {
     "rescuedogs_list_organizations",
     {
       title: "List rescue organizations",
-      description: "List rescue organizations with their statistics and available dogs count.",
+      description:
+        "List rescue organizations with each one's country and city, the countries it adopts to, its adoption fees, website and number of available dogs. Each has a numeric id to pass as organization_id to rescuedogs_search_dogs. Filter by the organization's country with an ISO code (GB and UK both work); active_only (default true) returns active organizations only. Returns up to 50 (default 20).",
       inputSchema: ListOrganizationsInputSchema.shape,
       outputSchema: ListOrganizationsOutputShape,
       annotations: {
@@ -27,10 +28,13 @@ export function registerListOrganizationsTool(server: McpServer): void {
       try {
         const parsed = ListOrganizationsInputSchema.parse(input);
 
-        // Check cache first (only for unfiltered requests)
+        // The cache entry is shared with search_dogs' organization-name
+        // matching, so it only ever holds the full active list: limit is
+        // applied below, and other filters bypass the cache.
+        const useCache = !parsed.country && parsed.active_only;
         let orgs: Awaited<ReturnType<typeof apiClient.getOrganizations>> | undefined;
 
-        if (!parsed.country) {
+        if (useCache) {
           orgs = cacheService.getOrganizations<typeof orgs>();
         }
 
@@ -38,13 +42,15 @@ export function registerListOrganizationsTool(server: McpServer): void {
           orgs = await apiClient.getOrganizations({
             country: normalizeCountryForApi(parsed.country),
             active_only: parsed.active_only,
-            limit: parsed.limit,
+            ...(!useCache && { limit: parsed.limit }),
           });
 
-          if (!parsed.country) {
+          if (useCache) {
             cacheService.setOrganizations(orgs);
           }
         }
+
+        orgs = orgs.slice(0, parsed.limit);
 
         const structured = {
           count: orgs.length,

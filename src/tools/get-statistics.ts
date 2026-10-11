@@ -10,7 +10,8 @@ export function registerGetStatisticsTool(server: McpServer): void {
     "rescuedogs_get_statistics",
     {
       title: "Get platform statistics",
-      description: "Get overall statistics about available rescue dogs on the platform.",
+      description:
+        "Get platform-wide totals: how many rescue dogs are available, how many organizations list them, and dog counts per country; the markdown view also shows new listings this week and the largest organizations. Takes no filters. For counts under specific criteria use rescuedogs_get_filter_counts, and for per-rescue details rescuedogs_list_organizations.",
       inputSchema: GetStatisticsInputSchema.shape,
       outputSchema: GetStatisticsOutputShape,
       annotations: {

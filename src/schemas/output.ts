@@ -75,7 +75,7 @@ const DogSchema = z.object({
   adoption_url: z
     .string()
     .nullish()
-    .describe("The rescue's own page - always surface this"),
+    .describe("The rescue's own adoption page, where applications are made"),
   primary_image_url: z.string().optional(),
   photo_urls: z
     .array(z.string())

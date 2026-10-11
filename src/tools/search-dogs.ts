@@ -40,7 +40,8 @@ export function registerSearchDogsTool(server: McpServer): void {
     "rescuedogs_search_dogs",
     {
       title: "Search rescue dogs",
-      description: "Search for rescue dogs available for adoption from European and UK organizations. Returns matching dogs with basic info. Use rescuedogs_get_dog_details for full profiles.",
+      description:
+        "Search rescue dogs available for adoption from European and UK rescue organizations by concrete criteria: breed, size, age, sex, energy, owner experience, home type, compatibility with children or other pets, and the country the adopter lives in. Every filter given must match. Returns one page of summaries (default 10, up to 50) with has_more; page with offset. A query that is exactly a rescue organization's name returns that organization's dogs instead of a text search. Each result has a slug for rescuedogs_get_dog_details and the rescue's adoption_url. When the adopter describes a lifestyle rather than criteria, rescuedogs_match_preferences fits better; when a search returns nothing, rescuedogs_get_filter_counts shows which values still have dogs.",
       inputSchema: SearchDogsInputSchema.shape,
       outputSchema: SearchDogsOutputShape,
       annotations: {

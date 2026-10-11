@@ -79,6 +79,21 @@ describe("ApiClient", () => {
       expect(config.url).toContain("energy=high");
       expect(config.url).toContain("sort=oldest");
     });
+
+    it("sends compatibility filters only when true", async () => {
+      mockRequest.mockResolvedValue({ data: [] });
+
+      await apiClient.searchDogs({
+        good_with_kids: true,
+        good_with_dogs: false,
+        good_with_cats: false,
+      });
+
+      const config = mockRequest.mock.calls[0]![0];
+      expect(config.url).toContain("good_with_kids=true");
+      expect(config.url).not.toContain("good_with_dogs");
+      expect(config.url).not.toContain("good_with_cats");
+    });
   });
 
   describe("getDogBySlug", () => {

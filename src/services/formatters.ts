@@ -359,7 +359,12 @@ export function formatOrganizationMarkdown(org: Organization): string {
 
   parts.push("### Details");
   parts.push("");
+  parts.push(`- **ID:** ${org.id} (organization_id for rescuedogs_search_dogs)`);
   parts.push(`- **Location:** ${org.city}, ${org.country}`);
+  if (org.adoption_fees?.usual_fee) {
+    const currency = org.adoption_fees.currency ? ` ${org.adoption_fees.currency}` : "";
+    parts.push(`- **Usual Adoption Fee:** ${org.adoption_fees.usual_fee}${currency}`);
+  }
   parts.push(`- **Dogs Available:** ${org.total_dogs}`);
   if (org.new_this_week > 0) {
     parts.push(`- **New This Week:** ${org.new_this_week}`);

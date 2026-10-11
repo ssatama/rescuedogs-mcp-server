@@ -53,6 +53,50 @@ describe("rescuedogs_list_organizations handler", () => {
     expect(cacheService.setOrganizations).toHaveBeenCalledWith(mockOrgs);
   });
 
+  it("fetches the full list for the cache and applies limit itself", async () => {
+    const many = Array.from({ length: 8 }, (_, i) => ({
+      ...mockOrganization,
+      id: i + 1,
+      name: `Rescue ${i + 1}`,
+    }));
+    vi.mocked(cacheService.getOrganizations).mockReturnValue(undefined);
+    vi.mocked(apiClient.getOrganizations).mockResolvedValue(many);
+
+    const handler = getHandler("rescuedogs_list_organizations");
+    const result = await handler({ limit: 3, response_format: "json" });
+
+    expect(apiClient.getOrganizations).toHaveBeenCalledWith(
+      expect.not.objectContaining({ limit: expect.anything() })
+    );
+    expect(cacheService.setOrganizations).toHaveBeenCalledWith(many);
+    expect(JSON.parse(result.content[0]!.text!)).toHaveLength(3);
+  });
+
+  it("applies limit to a cached list", async () => {
+    vi.mocked(cacheService.getOrganizations).mockReturnValue([
+      mockOrganization,
+      { ...mockOrganization, id: 2, name: "Second Rescue" },
+    ]);
+
+    const handler = getHandler("rescuedogs_list_organizations");
+    const result = await handler({ limit: 1, response_format: "json" });
+
+    expect(JSON.parse(result.content[0]!.text!)).toHaveLength(1);
+  });
+
+  it("skips cache when active_only is false", async () => {
+    vi.mocked(apiClient.getOrganizations).mockResolvedValue(mockOrgs);
+
+    const handler = getHandler("rescuedogs_list_organizations");
+    await handler({ active_only: false });
+
+    expect(cacheService.getOrganizations).not.toHaveBeenCalled();
+    expect(cacheService.setOrganizations).not.toHaveBeenCalled();
+    expect(apiClient.getOrganizations).toHaveBeenCalledWith(
+      expect.objectContaining({ active_only: false, limit: 20 })
+    );
+  });
+
   it("skips cache when country filter is provided", async () => {
     vi.mocked(apiClient.getOrganizations).mockResolvedValue(mockOrgs);
 

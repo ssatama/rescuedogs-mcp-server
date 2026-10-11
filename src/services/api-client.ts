@@ -165,12 +165,10 @@ class ApiClient {
       queryParams.set("available_to_country", params.available_to_country);
     if (params.organization_id)
       queryParams.set("organization_id", params.organization_id.toString());
-    if (params.good_with_kids !== undefined)
-      queryParams.set("good_with_kids", params.good_with_kids.toString());
-    if (params.good_with_dogs !== undefined)
-      queryParams.set("good_with_dogs", params.good_with_dogs.toString());
-    if (params.good_with_cats !== undefined)
-      queryParams.set("good_with_cats", params.good_with_cats.toString());
+    // The API filters on true only and ignores false, so false is not sent
+    if (params.good_with_kids) queryParams.set("good_with_kids", "true");
+    if (params.good_with_dogs) queryParams.set("good_with_dogs", "true");
+    if (params.good_with_cats) queryParams.set("good_with_cats", "true");
     if (params.sort) queryParams.set("sort", params.sort);
     if (params.limit) queryParams.set("limit", params.limit.toString());
     if (params.offset) queryParams.set("offset", params.offset.toString());
