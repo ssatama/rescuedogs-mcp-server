@@ -45,22 +45,38 @@ Restart Claude Desktop after making config changes.
 Releases publish from CI, never from a laptop. `.github/workflows/publish.yml`
 runs when a `vX.Y.Z` tag is pushed. It checks that the tag matches
 `package.json` and points at a commit on `main`, reruns the full CI suite,
-builds and packs the package, then publishes that tarball through npm trusted
+builds and packs the package, then stages that tarball on npm through trusted
 publishing. No npm token is involved, and the release carries a provenance
-attestation. Only the final publish job can mint the OIDC token, and it runs
-no project or dependency code.
+attestation. Only the final job can mint the OIDC token, and it runs no
+project or dependency code. A staged version is private until a maintainer
+approves it with 2FA, so a compromised workflow or GitHub account cannot ship
+a release on its own.
 
 1. Merge a PR that bumps `version` (`npm version X.Y.Z --no-git-tag-version`)
    and adds the `CHANGELOG.md` entry.
 2. Tag the merge commit on `main` and push the tag:
    `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. When the Publish workflow finishes, find the staged version with
+   `npm stage list rescuedogs-mcp-server` and check it before approving.
+   `npm stage view <stage-id>` should show the version you tagged. Then run
+   `npm stage download <stage-id>` and `shasum <tarball>`: the result should
+   match the `shasum` that the workflow's pack job printed. Reject anything
+   you didn't stage yourself with `npm stage reject <stage-id>`.
+4. Approve it with 2FA: `npm stage approve <stage-id>`, or use the Staged
+   Packages tab on npmjs.com.
+
+If the stage job fails, run `npm stage list` before rerunning it. A version
+that was already staged can't be staged again, so approve or reject the
+existing one instead.
 
 One-time npm setup, done on npmjs.com under the package's Settings:
 
 - Trusted publishing: GitHub Actions, repository
-  `ssatama/rescuedogs-mcp-server`, workflow `publish.yml`, environment `npm`.
-- Publishing access: "Require two-factor authentication and disallow tokens",
-  so this workflow is the only way to publish.
+  `ssatama/rescuedogs-mcp-server`, workflow `publish.yml`, environment `npm`,
+  with only `npm stage publish` allowed.
+- Publishing access: "Require two-factor authentication and disallow tokens".
+  CI can then only stage a release, and nothing without a maintainer's 2FA
+  can publish one.
 
 ## Hosted Server Config (Railway)
 
