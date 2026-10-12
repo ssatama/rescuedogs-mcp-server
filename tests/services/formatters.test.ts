@@ -259,6 +259,14 @@ describe("formatOrganizationMarkdown", () => {
     expect(result).toContain("**Usual Adoption Fee:** 350 EUR");
   });
 
+  it("shows a fee of zero rather than hiding it", () => {
+    const result = formatOrganizationMarkdown({
+      ...mockOrganization,
+      adoption_fees: { currency: "EUR", usual_fee: 0 },
+    });
+    expect(result).toContain("**Usual Adoption Fee:** 0 EUR");
+  });
+
   it("includes ships_to countries", () => {
     const result = formatOrganizationMarkdown(mockOrganization);
     expect(result).toContain("UK, DE, FR");
