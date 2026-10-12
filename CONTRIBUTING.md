@@ -40,6 +40,18 @@ Restart Claude Desktop after making config changes.
 - Test your changes locally before submitting
 - Follow existing code style
 
+## Releasing
+
+Releases publish from CI, never from a laptop. `.github/workflows/publish.yml`
+runs when a `v*` tag is pushed and publishes through npm trusted publishing,
+which needs no npm token and attaches a provenance attestation.
+
+1. Merge a PR that bumps `version` in `package.json` and adds the
+   `CHANGELOG.md` entry.
+2. Tag the merge commit on `main` and push the tag:
+   `git tag v3.0.1 && git push origin v3.0.1`. The workflow fails if the tag
+   doesn't match `package.json`.
+
 ## Hosted Server Config (Railway)
 
 The hosted endpoint (`https://mcp.rescuedogs.me`) deploys from `main` on
