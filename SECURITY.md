@@ -40,5 +40,6 @@ has no "Download" button. Treat any copy, fork or listing that offers one as
 malicious.
 
 Releases from 3.1.0 onward are published from GitHub Actions with npm
-provenance. Check the signatures and attestations of an install with
+provenance. From 3.1.1, CI only stages each release, and it goes live after a
+maintainer approves it with 2FA. Check the signatures and attestations of an install with
 `npm audit signatures`.

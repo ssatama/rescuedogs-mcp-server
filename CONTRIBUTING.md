@@ -45,22 +45,29 @@ Restart Claude Desktop after making config changes.
 Releases publish from CI, never from a laptop. `.github/workflows/publish.yml`
 runs when a `vX.Y.Z` tag is pushed. It checks that the tag matches
 `package.json` and points at a commit on `main`, reruns the full CI suite,
-builds and packs the package, then publishes that tarball through npm trusted
+builds and packs the package, then stages that tarball on npm through trusted
 publishing. No npm token is involved, and the release carries a provenance
-attestation. Only the final publish job can mint the OIDC token, and it runs
-no project or dependency code.
+attestation. Only the final job can mint the OIDC token, and it runs no
+project or dependency code. A staged version is private until a maintainer
+approves it with 2FA, so a compromised workflow or GitHub account cannot ship
+a release on its own.
 
 1. Merge a PR that bumps `version` (`npm version X.Y.Z --no-git-tag-version`)
    and adds the `CHANGELOG.md` entry.
 2. Tag the merge commit on `main` and push the tag:
    `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. When the Publish workflow finishes, approve the staged version with 2FA:
+   `npm stage list rescuedogs-mcp-server`, then `npm stage approve <stage-id>`,
+   or use the Staged Packages tab on npmjs.com. `npm stage download <stage-id>`
+   fetches the tarball if you want to inspect it first.
 
 One-time npm setup, done on npmjs.com under the package's Settings:
 
 - Trusted publishing: GitHub Actions, repository
-  `ssatama/rescuedogs-mcp-server`, workflow `publish.yml`, environment `npm`.
+  `ssatama/rescuedogs-mcp-server`, workflow `publish.yml`, environment `npm`,
+  with only `npm stage publish` allowed.
 - Publishing access: "Require two-factor authentication and disallow tokens",
-  so this workflow is the only way to publish.
+  so the workflow is the only way to publish.
 
 ## Hosted Server Config (Railway)
 
