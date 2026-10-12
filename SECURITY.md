@@ -38,6 +38,6 @@ This project never distributes ZIP archives, installers or executables, and
 has no "Download" button. Treat any copy, fork or listing that offers one as
 malicious.
 
-Releases from 3.0.1 onward are published from GitHub Actions with npm
+Releases from 3.1.0 onward are published from GitHub Actions with npm
 provenance. Check the signatures and attestations of an install with
 `npm audit signatures`.

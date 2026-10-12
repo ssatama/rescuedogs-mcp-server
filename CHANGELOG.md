@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-12
+
+Fuller tool descriptions, organization ids and adoption fees in
+`rescuedogs_list_organizations`, and fixes to `rescuedogs_match_preferences`
+and the organization cache. This is the first release published from GitHub
+Actions with npm provenance.
+
 ### Fixed
 
 - `rescuedogs_match_preferences` no longer claims `has_children`,
@@ -32,6 +39,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   have specific rules (GB/UK, IE, DE, FR), and `good_with_kids` says it includes
   dogs suited to older children only. The `rescuedogs_get_filter_counts`
   `current_filters` fields now describe their valid values.
+
+### Security
+
+- `proxy-addr` 2.0.8 (from 2.0.7, via `express`), fixing GHSA-jqcg-44mw-7w3h.
+  The lockfile pins it for the hosted server and the Docker image; a fresh npm
+  install resolves it too, but an existing tree holding 2.0.7 keeps it
+  (`express` allows `^2.0.7`), so run `npm update proxy-addr` there.
+- Published from CI through npm trusted publishing, with a provenance
+  attestation linking the package to its source commit and workflow run.
+  Check it with `npm audit signatures`.
 
 ## [3.0.0] - 2026-10-05
 
