@@ -40,6 +40,28 @@ Restart Claude Desktop after making config changes.
 - Test your changes locally before submitting
 - Follow existing code style
 
+## Releasing
+
+Releases publish from CI, never from a laptop. `.github/workflows/publish.yml`
+runs when a `vX.Y.Z` tag is pushed. It checks that the tag matches
+`package.json` and points at a commit on `main`, reruns the full CI suite,
+builds and packs the package, then publishes that tarball through npm trusted
+publishing. No npm token is involved, and the release carries a provenance
+attestation. Only the final publish job can mint the OIDC token, and it runs
+no project or dependency code.
+
+1. Merge a PR that bumps `version` (`npm version X.Y.Z --no-git-tag-version`)
+   and adds the `CHANGELOG.md` entry.
+2. Tag the merge commit on `main` and push the tag:
+   `git tag vX.Y.Z && git push origin vX.Y.Z`.
+
+One-time npm setup, done on npmjs.com under the package's Settings:
+
+- Trusted publishing: GitHub Actions, repository
+  `ssatama/rescuedogs-mcp-server`, workflow `publish.yml`, environment `npm`.
+- Publishing access: "Require two-factor authentication and disallow tokens",
+  so this workflow is the only way to publish.
+
 ## Hosted Server Config (Railway)
 
 The hosted endpoint (`https://mcp.rescuedogs.me`) deploys from `main` on
