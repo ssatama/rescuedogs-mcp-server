@@ -21,7 +21,8 @@ We will acknowledge receipt within 48 hours and work with you to understand and 
 
 ## Security Updates
 
-Security updates will be released as patch versions. We recommend always using the latest version.
+Security fixes ship in the next release, which may be a patch, minor or major
+version. We recommend always using the latest version.
 
 ## Official Sources
 

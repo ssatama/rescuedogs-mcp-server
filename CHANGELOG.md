@@ -14,6 +14,21 @@ Fuller tool descriptions, organization ids and adoption fees in
 and the organization cache. This is the first release published from GitHub
 Actions with npm provenance.
 
+### Added
+
+- `rescuedogs_list_organizations` markdown shows each organization's id (the
+  `organization_id` for `rescuedogs_search_dogs`) and its usual adoption fee,
+  including a fee of 0.
+
+### Changed
+
+- Fuller tool descriptions: limits, pagination, which IDs pass between tools,
+  and when another tool fits better. `rescuedogs_match_preferences` says its
+  filters match exactly, `rescuedogs_get_adoption_guide` says which countries
+  have specific rules (GB/UK, IE, DE, FR), and `good_with_kids` says it includes
+  dogs suited to older children only. The `rescuedogs_get_filter_counts`
+  `current_filters` fields now describe their valid values.
+
 ### Fixed
 
 - `rescuedogs_match_preferences` no longer claims `has_children`,
@@ -26,26 +41,15 @@ Actions with npm provenance.
   leave `rescuedogs_search_dogs` matching organization names against a partial
   list for 10 minutes. The cache now always holds the full active list.
 
-### Added
-
-- `rescuedogs_list_organizations` markdown shows each organization's id (the
-  `organization_id` for `rescuedogs_search_dogs`) and its usual adoption fee.
-
-### Changed
-
-- Fuller tool descriptions: limits, pagination, which IDs pass between tools,
-  and when another tool fits better. `rescuedogs_match_preferences` says its
-  filters match exactly, `rescuedogs_get_adoption_guide` says which countries
-  have specific rules (GB/UK, IE, DE, FR), and `good_with_kids` says it includes
-  dogs suited to older children only. The `rescuedogs_get_filter_counts`
-  `current_filters` fields now describe their valid values.
-
 ### Security
 
 - `proxy-addr` 2.0.8 (from 2.0.7, via `express`), fixing GHSA-jqcg-44mw-7w3h.
-  The lockfile pins it for the hosted server and the Docker image; a fresh npm
-  install resolves it too, but an existing tree holding 2.0.7 keeps it
-  (`express` allows `^2.0.7`), so run `npm update proxy-addr` there.
+  The lockfile pins it only for the hosted server (`Dockerfile.http`). npm
+  installs, including the Smithery image (`npm install -g`), resolve it from
+  `express`'s `^2.0.7` range, so a fresh install gets 2.0.8, but an existing
+  install holding 2.0.7 keeps it: reinstall with
+  `npm install -g rescuedogs-mcp-server@latest`, or run
+  `npm update proxy-addr` in a project.
 - Published from CI through npm trusted publishing, with a provenance
   attestation linking the package to its source commit and workflow run.
   Check it with `npm audit signatures`.
