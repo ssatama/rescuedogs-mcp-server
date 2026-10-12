@@ -56,18 +56,27 @@ a release on its own.
    and adds the `CHANGELOG.md` entry.
 2. Tag the merge commit on `main` and push the tag:
    `git tag vX.Y.Z && git push origin vX.Y.Z`.
-3. When the Publish workflow finishes, approve the staged version with 2FA:
-   `npm stage list rescuedogs-mcp-server`, then `npm stage approve <stage-id>`,
-   or use the Staged Packages tab on npmjs.com. `npm stage download <stage-id>`
-   fetches the tarball if you want to inspect it first.
+3. When the Publish workflow finishes, find the staged version with
+   `npm stage list rescuedogs-mcp-server` and check it before approving.
+   `npm stage view <stage-id>` should show the version you tagged. Then run
+   `npm stage download <stage-id>` and `shasum <tarball>`: the result should
+   match the `shasum` that the workflow's pack job printed. Reject anything
+   you didn't stage yourself with `npm stage reject <stage-id>`.
+4. Approve it with 2FA: `npm stage approve <stage-id>`, or use the Staged
+   Packages tab on npmjs.com.
+
+If the stage job fails, run `npm stage list` before rerunning it. A version
+that was already staged can't be staged again, so approve or reject the
+existing one instead.
 
 One-time npm setup, done on npmjs.com under the package's Settings:
 
 - Trusted publishing: GitHub Actions, repository
   `ssatama/rescuedogs-mcp-server`, workflow `publish.yml`, environment `npm`,
   with only `npm stage publish` allowed.
-- Publishing access: "Require two-factor authentication and disallow tokens",
-  so the workflow is the only way to publish.
+- Publishing access: "Require two-factor authentication and disallow tokens".
+  CI can then only stage a release, and nothing without a maintainer's 2FA
+  can publish one.
 
 ## Hosted Server Config (Railway)
 
