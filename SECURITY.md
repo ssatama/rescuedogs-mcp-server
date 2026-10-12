@@ -30,6 +30,9 @@ Install this server only from these sources:
 - npm: [`rescuedogs-mcp-server`](https://www.npmjs.com/package/rescuedogs-mcp-server)
 - Source: [github.com/ssatama/rescuedogs-mcp-server](https://github.com/ssatama/rescuedogs-mcp-server)
 - Hosted endpoint: `https://mcp.rescuedogs.me/mcp`
+- Directory listings that point to the above: the
+  [Claude Connectors Directory](https://claude.ai/directory/connectors/rescue-dogs),
+  Smithery and Glama
 
 This project never distributes ZIP archives, installers or executables, and
 has no "Download" button. Treat any copy, fork or listing that offers one as
