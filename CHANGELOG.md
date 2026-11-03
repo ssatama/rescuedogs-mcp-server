@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- The HTTP server logs a `warn` `mcp_request_rejected` line when the transport
-  rejects a request with a 4xx, recording the status, the `mcp-protocol-version`
-  header, whether a session id was sent and the JSON-RPC method names (never
-  params).
+- The HTTP server logs a `warn` `mcp_request_rejected` line for every 4xx on
+  `POST /mcp` (transport rejections, unparseable bodies, rate limiting),
+  recording the status, the `mcp-protocol-version` header, whether a session id
+  was sent, the message count and the JSON-RPC method names. Values are reduced
+  to known MCP methods and date-shaped versions; params are never logged.
 
 ### Security
 

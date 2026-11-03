@@ -26,8 +26,9 @@ used only as search filters for that single request.
 tool name, how long it took, and whether it succeeded, and one line per
 connection naming the client application and version it reports (for example
 `claude-ai 0.1.0`) and the protocol version it requested. When a request is
-rejected as malformed, it also logs the status code, the protocol version and
-request type the client sent, and whether it sent a session ID. No inputs,
+rejected (malformed, unsupported, or rate-limited), it also logs the status
+code, the protocol version and standard request types the client sent, how many
+messages the request held, and whether it sent a session ID. No inputs,
 results, or identifiers are logged.
 
 **Standard web request data.** The remote endpoint sees the IP address of the

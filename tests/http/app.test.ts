@@ -321,36 +321,87 @@ describe("client info logging", () => {
     }
   });
 
+  const rejectedLines = (spy: Parameters<typeof logLines>[0]) =>
+    logLines(spy).filter((l) => l.event === "mcp_request_rejected");
+
+  const rawPost = (body: string, headers: Record<string, string> = {}) =>
+    fetch(`${url}/mcp`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        ...headers,
+      },
+      body,
+    }).then(async (res) => {
+      await res.text();
+      return res.status;
+    });
+
   it("logs the protocol version of a rejected request, without params", async () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const res = await fetch(`${url}/mcp`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          accept: "application/json, text/event-stream",
-          "mcp-protocol-version": "2099-01-01",
-        },
-        body: JSON.stringify({
+      const status = await rawPost(
+        JSON.stringify({
           jsonrpc: "2.0",
           id: 1,
           method: "tools/call",
           params: { name: "rescuedogs_search_dogs", arguments: { breed: "secret-input" } },
         }),
-      });
-      await res.text();
-      expect(res.status).toBe(400);
+        { "mcp-protocol-version": "2099-01-01" }
+      );
+      expect(status).toBe(400);
 
-      const rejected = logLines(spy).filter((l) => l.event === "mcp_request_rejected");
-      expect(rejected).toHaveLength(1);
-      expect(rejected[0]).toMatchObject({
+      await vi.waitFor(() => expect(rejectedLines(spy)).toHaveLength(1));
+      expect(rejectedLines(spy)[0]).toMatchObject({
         level: "warn",
         status: 400,
         protocol_version: "2099-01-01",
         has_session_id: false,
+        message_count: 1,
         methods: ["tools/call"],
       });
-      expect(JSON.stringify(rejected[0])).not.toContain("secret-input");
+      expect(JSON.stringify(rejectedLines(spy)[0])).not.toContain("secret-input");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("reduces client-controlled fields to known values", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const batch = [
+        { jsonrpc: "2.0", id: 1, method: "user@example.com" },
+        ...Array.from({ length: 9 }, (_, i) => initialize(i + 2, "flood")),
+      ];
+      expect(
+        await rawPost(JSON.stringify(batch), {
+          "mcp-protocol-version": "token-abc123",
+          "mcp-session-id": "",
+        })
+      ).toBe(400);
+
+      await vi.waitFor(() => expect(rejectedLines(spy)).toHaveLength(1));
+      const line = rejectedLines(spy)[0]!;
+      expect(line).toMatchObject({
+        protocol_version: "invalid",
+        has_session_id: false,
+        message_count: 10,
+        methods: ["other", "initialize", "initialize", "initialize", "initialize"],
+      });
+      expect(JSON.stringify(line)).not.toMatch(/user@example\.com|token-abc123/);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("logs bodies rejected before they reach the transport", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await rawPost('{"jsonrpc":')).toBe(400);
+
+      await vi.waitFor(() => expect(rejectedLines(spy)).toHaveLength(1));
+      expect(rejectedLines(spy)[0]).toMatchObject({ status: 400, message_count: 0, methods: [] });
     } finally {
       spy.mockRestore();
     }
@@ -360,7 +411,12 @@ describe("client info logging", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       expect(await post(initialize(1, "fine"))).toBe(200);
-      expect(logLines(spy).filter((l) => l.event === "mcp_request_rejected")).toHaveLength(0);
+      // mcp_initialize is written on "close", which follows "finish": once it
+      // is there, a rejection line would have been written too.
+      await vi.waitFor(() =>
+        expect(logLines(spy).filter((l) => l.event === "mcp_initialize")).toHaveLength(1)
+      );
+      expect(rejectedLines(spy)).toHaveLength(0);
     } finally {
       spy.mockRestore();
     }

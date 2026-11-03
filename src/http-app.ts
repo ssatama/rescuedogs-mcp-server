@@ -78,6 +78,12 @@ export function createHttpApp(options: HttpAppOptions = {}): Express {
   const limiters = buildLimiters(options.rateLimit);
   app.post(
     "/mcp",
+    // First, so rate-limited and unparseable requests are logged too. On
+    // "finish", once the status is final and the response fully written.
+    (req: Request, res: Response, next: NextFunction) => {
+      res.on("finish", () => logRejectedRequest(req, res));
+      next();
+    },
     ...limiters,
     express.json({ limit: JSON_BODY_LIMIT }),
     handleMcpRequest
@@ -201,28 +207,68 @@ function logClientInfo(server: McpServer, body: unknown): void {
   });
 }
 
+// Methods a client sends to a server. Anything else is logged as "other": the
+// field is client-controlled, and an allowlist keeps arbitrary strings (and
+// whatever a broken client puts in them) out of the logs.
+const KNOWN_METHODS = new Set([
+  "initialize",
+  "ping",
+  "tools/list",
+  "tools/call",
+  "resources/list",
+  "resources/read",
+  "resources/templates/list",
+  "resources/subscribe",
+  "resources/unsubscribe",
+  "prompts/list",
+  "prompts/get",
+  "completion/complete",
+  "logging/setLevel",
+  "tasks/get",
+  "tasks/list",
+  "tasks/result",
+  "tasks/cancel",
+  "notifications/initialized",
+  "notifications/cancelled",
+  "notifications/progress",
+  "notifications/roots/list_changed",
+]);
+
+const PROTOCOL_VERSION_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
- * Logs why the transport turned a request away (4xx), so a client that
- * connects but never gets to call a tool shows up in the logs rather than only
- * as a status code in the access logs. Only protocol metadata is recorded: the
- * protocol-version header, whether a session id was sent, and the JSON-RPC
- * method names - never params. All of it is client-controlled, so it is clipped.
+ * Logs every 4xx on POST /mcp - transport rejections, unparseable bodies and
+ * rate limiting alike - so a client that connects but never gets to call a
+ * tool shows up in the logs, not only as a status code in the access logs.
+ * Only protocol metadata is recorded, reduced to known values: the
+ * protocol-version header if it is date-shaped, whether a session id was sent,
+ * and the JSON-RPC method names. Never params.
  */
 function logRejectedRequest(req: Request, res: Response): void {
   if (res.statusCode < 400 || res.statusCode >= 500) return;
 
-  const clip = (value: unknown, max: number) =>
-    typeof value === "string" ? value.slice(0, max) : undefined;
-  const messages: unknown[] = Array.isArray(req.body) ? req.body : [req.body];
+  const version = req.get("mcp-protocol-version");
+  const body: unknown = req.body;
+  const messages: unknown[] =
+    body === undefined ? [] : Array.isArray(body) ? body : [body];
+  const methodOf = (message: unknown) => {
+    const method = (message as { method?: unknown } | null)?.method;
+    if (method === undefined) return null;
+    return typeof method === "string" && KNOWN_METHODS.has(method) ? method : "other";
+  };
 
   log("warn", "mcp_request_rejected", {
     event: "mcp_request_rejected",
     status: res.statusCode,
-    protocol_version: clip(req.get("mcp-protocol-version"), 40),
-    has_session_id: req.get("mcp-session-id") !== undefined,
-    methods: messages
-      .slice(0, 5)
-      .map((m) => clip((m as { method?: unknown } | null)?.method, 50) ?? null),
+    protocol_version:
+      version === undefined
+        ? undefined
+        : PROTOCOL_VERSION_FORMAT.test(version)
+          ? version
+          : "invalid",
+    has_session_id: Boolean(req.get("mcp-session-id")),
+    message_count: messages.length,
+    methods: messages.slice(0, 5).map(methodOf),
   });
 }
 
@@ -240,7 +286,6 @@ async function handleMcpRequest(req: Request, res: Response): Promise<void> {
   // in-flight request with it.
   res.on("close", () => {
     logClientInfo(server, req.body);
-    logRejectedRequest(req, res);
     const swallow = (error: unknown) =>
       log("error", "mcp_cleanup_failed", {
         event: "mcp_cleanup_failed",
