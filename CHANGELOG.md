@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The HTTP server logs a `warn` `mcp_request_rejected` line for every 4xx on
+  `POST /mcp` (transport rejections, unparseable bodies, rate limiting),
+  recording the status, the `mcp-protocol-version` header, whether a session id
+  was sent, the message count and the JSON-RPC method names. Values are reduced
+  to known MCP methods and date-shaped versions; params are never logged.
+
+### Security
+
+- Updated `follow-redirects` to 1.16.2 (GHSA-mrwp-f3q8-3g9p) and
+  `@hono/node-server` to 2.1.6 (GHSA-rmxm-3fg6-px4f).
+
 ## [3.1.0] - 2026-10-12
 
 Fuller tool descriptions, organization ids and adoption fees in

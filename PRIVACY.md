@@ -25,8 +25,11 @@ used only as search filters for that single request.
 **Operational logs.** The server writes one line per tool call containing the
 tool name, how long it took, and whether it succeeded, and one line per
 connection naming the client application and version it reports (for example
-`claude-ai 0.1.0`) and the protocol version it requested. No inputs, results, or
-identifiers are logged.
+`claude-ai 0.1.0`) and the protocol version it requested. When a request is
+rejected (malformed, unsupported, or rate-limited), it also logs the status
+code, the protocol version and standard request types the client sent, how many
+messages the request held, and whether it sent a session ID. No inputs,
+results, or identifiers are logged.
 
 **Standard web request data.** The remote endpoint sees the IP address of the
 connecting client, as any HTTP service does. The server holds it in memory only,
