@@ -201,6 +201,31 @@ function logClientInfo(server: McpServer, body: unknown): void {
   });
 }
 
+/**
+ * Logs why the transport turned a request away (4xx), so a client that
+ * connects but never gets to call a tool shows up in the logs rather than only
+ * as a status code in the access logs. Only protocol metadata is recorded: the
+ * protocol-version header, whether a session id was sent, and the JSON-RPC
+ * method names - never params. All of it is client-controlled, so it is clipped.
+ */
+function logRejectedRequest(req: Request, res: Response): void {
+  if (res.statusCode < 400 || res.statusCode >= 500) return;
+
+  const clip = (value: unknown, max: number) =>
+    typeof value === "string" ? value.slice(0, max) : undefined;
+  const messages: unknown[] = Array.isArray(req.body) ? req.body : [req.body];
+
+  log("warn", "mcp_request_rejected", {
+    event: "mcp_request_rejected",
+    status: res.statusCode,
+    protocol_version: clip(req.get("mcp-protocol-version"), 40),
+    has_session_id: req.get("mcp-session-id") !== undefined,
+    methods: messages
+      .slice(0, 5)
+      .map((m) => clip((m as { method?: unknown } | null)?.method, 50) ?? null),
+  });
+}
+
 async function handleMcpRequest(req: Request, res: Response): Promise<void> {
   // Stateless: a fresh server and transport per request. There is no
   // per-user state to keep, and sharing one instance across concurrent
@@ -215,6 +240,7 @@ async function handleMcpRequest(req: Request, res: Response): Promise<void> {
   // in-flight request with it.
   res.on("close", () => {
     logClientInfo(server, req.body);
+    logRejectedRequest(req, res);
     const swallow = (error: unknown) =>
       log("error", "mcp_cleanup_failed", {
         event: "mcp_cleanup_failed",

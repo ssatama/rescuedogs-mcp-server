@@ -320,6 +320,51 @@ describe("client info logging", () => {
       spy.mockRestore();
     }
   });
+
+  it("logs the protocol version of a rejected request, without params", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const res = await fetch(`${url}/mcp`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json, text/event-stream",
+          "mcp-protocol-version": "2099-01-01",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/call",
+          params: { name: "rescuedogs_search_dogs", arguments: { breed: "secret-input" } },
+        }),
+      });
+      await res.text();
+      expect(res.status).toBe(400);
+
+      const rejected = logLines(spy).filter((l) => l.event === "mcp_request_rejected");
+      expect(rejected).toHaveLength(1);
+      expect(rejected[0]).toMatchObject({
+        level: "warn",
+        status: 400,
+        protocol_version: "2099-01-01",
+        has_session_id: false,
+        methods: ["tools/call"],
+      });
+      expect(JSON.stringify(rejected[0])).not.toContain("secret-input");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("does not log accepted requests as rejected", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(await post(initialize(1, "fine"))).toBe(200);
+      expect(logLines(spy).filter((l) => l.event === "mcp_request_rejected")).toHaveLength(0);
+    } finally {
+      spy.mockRestore();
+    }
+  });
 });
 
 describe("port resolution", () => {
