@@ -153,10 +153,25 @@ describe("live API contract", () => {
   it(
     "the high energy band includes very_high dogs",
     async () => {
-      const veryHigh = await apiClient.searchDogs({ energy: "high", limit: 100 });
-      expect(
-        veryHigh.some((d) => d.dog_profiler_data?.energy_level === "very_high")
-      ).toBe(true);
+      // The band sorts very_high dogs among ~hundreds of high ones, so checking
+      // the first page for any very_high dog failed whenever none landed there.
+      // Pin one known very_high dog instead and narrow the band search to it.
+      const [target] = await apiClient.searchDogs({
+        energy_level: "very_high",
+        limit: 1,
+      });
+      expect(target).toBeDefined();
+
+      const band = await apiClient.searchDogs({
+        energy: "high",
+        search: target!.name,
+        organization_id: target!.organization_id,
+        limit: 100,
+      });
+      expect(band.some((d) => d.id === target!.id)).toBe(true);
+      for (const dog of band) {
+        expect(["high", "very_high"]).toContain(dog.dog_profiler_data?.energy_level);
+      }
     },
     TIMEOUT
   );
