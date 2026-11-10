@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-11-10
+
+Logging for rejected MCP requests, and runtime dependency updates including
+security fixes.
+
 ### Added
 
 - The HTTP server logs a `warn` `mcp_request_rejected` line for every 4xx on
@@ -19,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated `follow-redirects` to 1.16.2 (GHSA-mrwp-f3q8-3g9p) and
   `@hono/node-server` to 2.1.6 (GHSA-rmxm-3fg6-px4f).
+
+### Changed
+
+- Runtime dependencies: `@modelcontextprotocol/sdk` 1.32.2, `express` 5.3.0,
+  `express-rate-limit` 8.7.2, `axios` 1.21.0, `zod` 4.6.7.
 
 ## [3.1.0] - 2026-10-12
 
