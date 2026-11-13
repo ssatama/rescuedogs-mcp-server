@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiClient } from "../services/api-client.js";
 import { cacheService } from "../services/cache-service.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
-import { fetchDogImages } from "../services/image-service.js";
+import { fetchDogImages, type ImageContent } from "../services/image-service.js";
 import { toPublicDog, toPublicDogSummary } from "../services/projection.js";
 import { SearchDogsInputSchema } from "../schemas/index.js";
 import { SearchDogsOutputShape } from "../schemas/output.js";
@@ -140,7 +140,7 @@ export function registerSearchDogsTool(server: McpServer): void {
         // Build response content
         const content: Array<
           | { type: "text"; text: string }
-          | { type: "image"; data: string; mimeType: "image/jpeg" }
+          | ImageContent
         > = [];
 
         // Add text content

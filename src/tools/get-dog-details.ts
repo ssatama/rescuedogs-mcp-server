@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiClient } from "../services/api-client.js";
 import { formatDogMarkdown } from "../services/formatters.js";
-import { fetchDogImage, fetchDogImages } from "../services/image-service.js";
+import { fetchDogImage, fetchDogImages, type ImageContent } from "../services/image-service.js";
 import { toPublicDog } from "../services/projection.js";
 import { GetDogDetailsInputSchema } from "../schemas/index.js";
 import { GetDogDetailsOutputShape } from "../schemas/output.js";
@@ -45,7 +45,7 @@ export function registerGetDogDetailsTool(server: McpServer): void {
         // Build response content
         const content: Array<
           | { type: "text"; text: string }
-          | { type: "image"; data: string; mimeType: "image/jpeg" }
+          | ImageContent
         > = [];
 
         // Add images first if requested; include_image: false means none

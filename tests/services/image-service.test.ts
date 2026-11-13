@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { buildTransformUrl } from "../../src/services/image-service.js";
+import { buildVariantUrl } from "../../src/services/image-service.js";
 
 // Mock axios and cache-service before importing the functions that use them
 vi.mock("axios", () => ({
@@ -23,42 +23,43 @@ import { fetchDogImage, fetchDogImages } from "../../src/services/image-service.
 const mockedAxios = vi.mocked(axios);
 const mockedCache = vi.mocked(cacheService);
 
-describe("buildTransformUrl", () => {
-  it("transforms CDN URL with thumbnail preset", () => {
-    const result = buildTransformUrl(
-      "https://images.rescuedogs.me/dogs/buddy.jpg",
-      "thumbnail"
-    );
-    expect(result).toBe(
-      "https://images.rescuedogs.me/cdn-cgi/image/w=200,h=200,fit=cover,q=70,f=jpeg/dogs/buddy.jpg"
+// Pre-generated WebP variants: Cloudflare bills every /cdn-cgi/image/ transformation
+describe("buildVariantUrl", () => {
+  it("points a thumbnail at the 320px variant", () => {
+    expect(buildVariantUrl("https://images.rescuedogs.me/dogs/buddy.jpg", "thumbnail")).toBe(
+      "https://images.rescuedogs.me/dogs/buddy_w320.webp"
     );
   });
 
-  it("transforms CDN URL with medium preset", () => {
-    const result = buildTransformUrl(
-      "https://images.rescuedogs.me/dogs/buddy.jpg",
-      "medium"
+  it("points a medium image at the 640px variant", () => {
+    expect(buildVariantUrl("https://images.rescuedogs.me/dogs/buddy.jpg", "medium")).toBe(
+      "https://images.rescuedogs.me/dogs/buddy_w640.webp"
     );
-    expect(result).toBe(
-      "https://images.rescuedogs.me/cdn-cgi/image/w=400,h=400,fit=cover,q=75,f=jpeg/dogs/buddy.jpg"
-    );
+  });
+
+  it("only replaces the file extension, not dots in folder names", () => {
+    expect(
+      buildVariantUrl("https://images.rescuedogs.me/rescue_dogs/tierschutzverein_europa_e.v./rex_1.jpg", "thumbnail")
+    ).toBe("https://images.rescuedogs.me/rescue_dogs/tierschutzverein_europa_e.v./rex_1_w320.webp");
+  });
+
+  it("unwraps an old transformation URL", () => {
+    expect(
+      buildVariantUrl("https://images.rescuedogs.me/cdn-cgi/image/w=200,f=jpeg/dogs/buddy.jpg", "thumbnail")
+    ).toBe("https://images.rescuedogs.me/dogs/buddy_w320.webp");
   });
 
   it("returns original URL for non-CDN images", () => {
     const externalUrl = "https://external-site.com/images/dog.jpg";
-    const result = buildTransformUrl(externalUrl, "thumbnail");
-    expect(result).toBe(externalUrl);
+    expect(buildVariantUrl(externalUrl, "thumbnail")).toBe(externalUrl);
   });
 
   it("returns null for empty string", () => {
-    const result = buildTransformUrl("", "thumbnail");
-    expect(result).toBeNull();
+    expect(buildVariantUrl("", "thumbnail")).toBeNull();
   });
 
   it("returns original URL for invalid URL format", () => {
-    const result = buildTransformUrl("not-a-url", "thumbnail");
-    // Invalid URL falls through to catch block, returns original
-    expect(result).toBe("not-a-url");
+    expect(buildVariantUrl("not-a-url", "thumbnail")).toBe("not-a-url");
   });
 });
 
@@ -79,14 +80,14 @@ describe("fetchDogImage", () => {
   });
 
   it("returns cached data without making axios call", async () => {
-    mockedCache.getImage.mockReturnValue("cached-base64");
+    mockedCache.getImage.mockReturnValue(JSON.stringify({ data: "cached-base64", mimeType: "image/webp" }));
 
     const result = await fetchDogImage("https://images.rescuedogs.me/dogs/buddy.jpg");
 
     expect(result).toEqual({
       type: "image",
       data: "cached-base64",
-      mimeType: "image/jpeg",
+      mimeType: "image/webp",
     });
     expect(mockedAxios.get).not.toHaveBeenCalled();
   });
@@ -94,17 +95,31 @@ describe("fetchDogImage", () => {
   it("fetches image and returns base64 content", async () => {
     mockedCache.getImage.mockReturnValue(undefined);
     const fakeBuffer = Buffer.from("fake-image-data");
-    mockedAxios.get.mockResolvedValue({ data: fakeBuffer });
+    mockedAxios.get.mockResolvedValue({ data: fakeBuffer, headers: { "content-type": "image/webp" } });
 
     const result = await fetchDogImage("https://images.rescuedogs.me/dogs/buddy.jpg");
 
     expect(result).toEqual({
       type: "image",
       data: fakeBuffer.toString("base64"),
-      mimeType: "image/jpeg",
+      mimeType: "image/webp",
     });
     expect(mockedAxios.get).toHaveBeenCalledOnce();
+    expect(mockedAxios.get.mock.calls[0]?.[0]).toBe("https://images.rescuedogs.me/dogs/buddy_w320.webp");
     expect(mockedCache.setImage).toHaveBeenCalledOnce();
+  });
+
+  it("falls back to the original when the variant is missing", async () => {
+    mockedCache.getImage.mockReturnValue(undefined);
+    const fakeBuffer = Buffer.from("original");
+    mockedAxios.get
+      .mockRejectedValueOnce(new Error("404"))
+      .mockResolvedValueOnce({ data: fakeBuffer, headers: { "content-type": "image/jpeg" } });
+
+    const result = await fetchDogImage("https://images.rescuedogs.me/dogs/buddy.jpg");
+
+    expect(result).toEqual({ type: "image", data: fakeBuffer.toString("base64"), mimeType: "image/jpeg" });
+    expect(mockedAxios.get.mock.calls[1]?.[0]).toBe("https://images.rescuedogs.me/dogs/buddy.jpg");
   });
 
   it("returns null when axios throws", async () => {

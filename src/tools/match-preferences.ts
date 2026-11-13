@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { apiClient } from "../services/api-client.js";
 import { formatDogsListMarkdown } from "../services/formatters.js";
-import { fetchDogImages } from "../services/image-service.js";
+import { fetchDogImages, type ImageContent } from "../services/image-service.js";
 import { toPublicDog, toPublicDogSummary } from "../services/projection.js";
 import { MatchPreferencesInputSchema } from "../schemas/index.js";
 import { MatchPreferencesOutputShape } from "../schemas/output.js";
@@ -86,7 +86,7 @@ export function registerMatchPreferencesTool(server: McpServer): void {
 
         const content: Array<
           | { type: "text"; text: string }
-          | { type: "image"; data: string; mimeType: "image/jpeg" }
+          | ImageContent
         > = [];
 
         // Add header with matched criteria
