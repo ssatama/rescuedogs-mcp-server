@@ -11,9 +11,14 @@ export const CACHE_TTL = {
   IMAGES: 30 * 60 * 1000, // 30 minutes
 } as const;
 
-export const IMAGE_TRANSFORMS = {
-  thumbnail: "w=200,h=200,fit=cover,q=70,f=jpeg",
-  medium: "w=400,h=400,fit=cover,q=75,f=jpeg",
+/**
+ * Pre-generated WebP variant widths on images.rescuedogs.me (rescue-dog-aggregator
+ * utils/image_variants.py). Each image has <key>_w{320,640,1200}.webp; there is no
+ * on-demand resizing (Cloudflare bills each transformation).
+ */
+export const IMAGE_VARIANT_WIDTHS = {
+  thumbnail: 320,
+  medium: 640,
 } as const;
 
 export const IMAGE_BASE_URL =

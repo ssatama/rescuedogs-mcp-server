@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dog photos are fetched as pre-generated WebP variants on
+  `images.rescuedogs.me` (`<image>_w320.webp` for thumbnails, `_w640.webp` for
+  medium) instead of Cloudflare `/cdn-cgi/image/` transformations, which are
+  billed per image. The image content's `mimeType` now reports the real type
+  (`image/webp`), and the original photo is used if a variant is missing (#120).
+
 ## [3.2.0] - 2026-11-10
 
 Logging for rejected MCP requests, and runtime dependency updates including
