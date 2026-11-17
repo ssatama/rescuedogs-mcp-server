@@ -22,8 +22,13 @@ Dog photos served as pre-generated WebP variants, and a security update to
 
 ### Security
 
-- Updated `hono` to 4.13.18 (GHSA-4m76-xfj5-7975, GHSA-h7mg-cq63-vhpq,
-  GHSA-3gg2-335m-rxc6, GHSA-46wx-v44x-9hh2, GHSA-4h7h-rv7c-7m2v).
+- Updated `hono` to 4.13.18 in the lockfile (GHSA-4m76-xfj5-7975,
+  GHSA-h7mg-cq63-vhpq, GHSA-3gg2-335m-rxc6, GHSA-46wx-v44x-9hh2,
+  GHSA-4h7h-rv7c-7m2v, GHSA-74fm-fwc7-3fwp, GHSA-39q9-qp46-w8xg,
+  GHSA-92p4-j3wq-jmqx, GHSA-h25j-2p75-qj33). This covers the hosted server and
+  Docker builds. `hono` is a transitive dependency of
+  `@modelcontextprotocol/sdk`, so npm installs pick it up only on a fresh
+  resolve; existing installs should run `npm update hono`.
 
 ## [3.2.0] - 2026-11-10
 
