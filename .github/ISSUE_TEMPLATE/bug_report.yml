@@ -41,7 +41,7 @@ body:
     attributes:
       label: Version
       description: What version of the package are you using?
-      placeholder: "3.2.0"
+      placeholder: "3.2.1"
     validations:
       required: true
 

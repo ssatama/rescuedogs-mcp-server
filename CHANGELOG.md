@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-11-17
+
+Dog photos served as pre-generated WebP variants, and a security update to
+`hono`.
+
 ### Changed
 
 - Dog photos are fetched as pre-generated WebP variants on
@@ -14,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   medium) instead of Cloudflare `/cdn-cgi/image/` transformations, which are
   billed per image. The image content's `mimeType` now reports the real type
   (`image/webp`), and the original photo is used if a variant is missing (#120).
+
+### Security
+
+- Updated `hono` to 4.13.18 (GHSA-4m76-xfj5-7975, GHSA-h7mg-cq63-vhpq,
+  GHSA-3gg2-335m-rxc6, GHSA-46wx-v44x-9hh2, GHSA-4h7h-rv7c-7m2v).
 
 ## [3.2.0] - 2026-11-10
 
